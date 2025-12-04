@@ -4,12 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start:dev": "ts-node-dev --respawn --transpile-only src/main.ts",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
-  },
+  "start:dev": "ts-node-dev --respawn --transpile-only src/main.ts",
+  "build": "tsc",
+  "start": "node dist/main.js",
+  "start:prod": "node dist/main.js",
+  "test": "jest",
+  "test:watch": "jest --watch",
+  "test:cov": "jest --coverage",
+  "test:e2e": "jest --config ./test/jest-e2e.json"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",
