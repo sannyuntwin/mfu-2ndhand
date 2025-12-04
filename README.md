@@ -1,490 +1,278 @@
-# MFU 2nd Hand Marketplace
+# **📦 MFU 2nd Hand Marketplace**
 
-A comprehensive full-stack e-commerce platform for second-hand goods, enabling users to buy and sell pre-owned items securely and efficiently. Built with modern technologies to provide a seamless marketplace experience.
+A modern full-stack marketplace for buying and selling second-hand items.
+Built with a clean UI, secure backend services, and a complete e-commerce workflow.
 
-## Overview
+---
 
-The MFU 2nd Hand Marketplace is a web application that connects buyers and sellers of second-hand goods. It features user authentication, product management, shopping cart functionality, secure payments via Stripe, product reviews, favorites, notifications, and more. The platform supports role-based access control with buyer and seller roles, allowing sellers to list and manage their products while buyers can browse, purchase, and review items.
+## **📚 Overview**
 
-## Features
+The **MFU 2nd Hand Marketplace** connects buyers and sellers of pre-owned goods.
+It includes authentication, product listings, payments, reviews, favorites, notifications, and role-based access.
 
-### User Management
-- **Authentication & Authorization**: JWT-based authentication with role-based access control (Buyer/Seller)
-- **User Roles**: Separate interfaces and permissions for buyers and sellers
-- **Profile Management**: User profiles with order history and preferences
+---
 
-### Product Management
-- **Product Listings**: Sellers can create, update, and delete product listings
-- **Rich Product Details**: Title, description, price, images, and categorization
-- **Image Upload & Processing**: Cloudinary integration for optimized image handling
-- **Category Organization**: Hierarchical categories for better product discovery
+## **✨ Features**
 
-### E-Commerce Functionality
-- **Advanced Search & Filtering**: Search by keywords, filter by category, price range, and more
-- **Shopping Cart**: Persistent cart functionality with quantity management
-- **Secure Checkout**: Integrated Stripe payment processing with payment intent handling
-- **Order Management**: Complete order lifecycle from pending to delivered
-- **Order Status Tracking**: Real-time updates on order status (Pending, Confirmed, Shipped, Delivered, Cancelled)
+### **👤 User Management**
 
-### Social Features
-- **Product Reviews & Ratings**: Users can leave reviews and ratings (with seller moderation)
-- **Favorites/Wishlist**: Save favorite products for later
-- **Notifications**: System notifications for orders, reviews, and important updates
+* 🔐 JWT authentication
+* 👥 Buyer & Seller roles
+* 🧾 User profiles + order history
 
-### Technical Features
-- **Responsive Design**: Mobile-first design using Tailwind CSS
-- **Real-time Updates**: Efficient data fetching with SWR
-- **API Architecture**: RESTful API built with NestJS
-- **Database**: PostgreSQL with Prisma ORM for robust data management
+### **🛍️ Product Management**
 
-## Tech Stack
+* ➕ Add / ✏️ Edit / ❌ Delete products
+* 🖼️ Cloudinary image uploads
+* 🏷️ Categories & filtering
+* 📄 Product details with price, images, and descriptions
 
-### Backend
-- **Framework**: NestJS (Node.js)
-- **Language**: TypeScript
-- **Database**: PostgreSQL
-- **ORM**: Prisma
-- **Authentication**: JWT with Passport.js
-- **Payments**: Stripe API
-- **Image Processing**: Sharp + Cloudinary
-- **Validation**: class-validator
+### **🛒 E-Commerce**
 
-### Frontend
-- **Framework**: Next.js (React)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **State Management**: React Context + SWR
-- **HTTP Client**: Axios
-- **Testing**: Jest + React Testing Library
+* 🔎 Advanced search & filters
+* 🛒 Shopping cart (persistent)
+* 💳 Stripe payment integration
+* 📦 Order lifecycle (Pending → Delivered)
+* 🔔 Real-time status updates
 
-### DevOps
-- **Containerization**: Docker & Docker Compose
-- **Process Management**: PM2 (for production)
-- **Database Migrations**: Prisma Migrate
+### **⭐ Social Features**
 
-## Setup Instructions
+* 📝 Reviews & ratings
+* ❤️ Favorites / wishlist
+* 🔔 Notifications
 
-### Prerequisites
+### **⚙️ Technical Features**
 
-- Node.js 16 or higher
-- PostgreSQL 15 or higher
-- Docker & Docker Compose (optional, for containerized setup)
-- Cloudinary account (for image uploads)
-- Stripe account (for payment processing)
+* 📱 Responsive UI (Tailwind CSS)
+* ⚡ SWR real-time fetching
+* 🔌 REST API with NestJS
+* 🗄️ PostgreSQL + Prisma
 
-### Quick Start with Docker
+---
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd mfu-2ndhand
-   ```
+## **🧱 Tech Stack**
 
-2. **Start PostgreSQL database**
-   ```bash
-   docker-compose up -d postgres
-   ```
+### **🖥️ Frontend**
 
-3. **Backend Setup**
-   ```bash
-   cd backend
-   cp .env.example .env  # Configure your environment variables
-   npm install
-   npx prisma migrate dev
-   npm run start:dev
-   ```
+* ⚛️ Next.js
+* 🔷 TypeScript
+* 🎨 Tailwind CSS
+* 🔄 SWR
+* 📡 Axios
 
-4. **Frontend Setup** (in a new terminal)
-   ```bash
-   cd frontend
-   cp .env.example .env  # Configure your environment variables
-   npm install
-   npm run dev
-   ```
+### **🛠️ Backend**
 
-5. **Access the application**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:3001
-   - Database Admin: http://localhost:5000 (Prisma Studio)
+* 🟦 NestJS
+* 🔷 TypeScript
+* 🗄️ PostgreSQL & Prisma
+* 🔐 JWT Auth
+* 💳 Stripe
+* ☁️ Cloudinary
 
-### Manual Setup (without Docker)
+### **📦 DevOps**
 
-#### Database Setup
+* 🐳 Docker & Docker Compose
+* 🔥 PM2
+* 🔄 Prisma Migrate
+
+---
+
+## **🚀 Quick Start (Docker Recommended)**
+
 ```bash
-# Install PostgreSQL and create database
-createdb mfu_marketplace
-
-# Or using Docker for database only
-docker run --name mfu-postgres -e POSTGRES_PASSWORD=password -e POSTGRES_DB=mfu_marketplace -p 5432:5432 -d postgres:15
+git clone <repository-url>
+cd mfu-2ndhand
 ```
 
-#### Backend Configuration
+### **🐳 Start DB**
+
+```bash
+docker-compose up -d postgres
+```
+
+### **🛠️ Backend Setup**
+
 ```bash
 cd backend
+cp .env.example .env
 npm install
-
-# Create .env file with required variables:
-DATABASE_URL="postgresql://postgres:password@localhost:5432/mfu_marketplace"
-JWT_SECRET="your-super-secret-jwt-key"
-STRIPE_SECRET_KEY="sk_test_..."
-STRIPE_WEBHOOK_SECRET="whsec_..."
-CLOUDINARY_CLOUD_NAME="your-cloud-name"
-CLOUDINARY_API_KEY="your-api-key"
-CLOUDINARY_API_SECRET="your-api-secret"
-
 npx prisma migrate dev
 npm run start:dev
 ```
 
-#### Frontend Configuration
+### **💻 Frontend Setup**
+
 ```bash
 cd frontend
+cp .env.example .env
 npm install
-
-# Create .env.local file:
-NEXT_PUBLIC_API_URL="http://localhost:3001"
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="pk_test_..."
+npm run dev
 ```
 
-### Environment Variables
+📍 **Frontend:** [http://localhost:3000](http://localhost:3000)
+📍 **Backend API:** [http://localhost:3001](http://localhost:3001)
+📍 **Prisma Studio:** [http://localhost:5000](http://localhost:5000)
 
-#### Backend (.env)
-```env
-DATABASE_URL=postgresql://postgres:password@localhost:5432/mfu_marketplace
-JWT_SECRET=your-jwt-secret-key
-STRIPE_SECRET_KEY=sk_test_your-stripe-secret-key
-STRIPE_WEBHOOK_SECRET=whsec_your-webhook-secret
-CLOUDINARY_CLOUD_NAME=your-cloudinary-name
-CLOUDINARY_API_KEY=your-cloudinary-api-key
-CLOUDINARY_API_SECRET=your-cloudinary-api-secret
+---
+
+## **🧩 Environment Variables**
+
+### **🔙 Backend**
+
+```
+DATABASE_URL=
+JWT_SECRET=
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
 ```
 
-#### Frontend (.env.local)
-```env
-NEXT_PUBLIC_API_URL=http://localhost:3001
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_your-stripe-publishable-key
+### **🔝 Frontend**
+
+```
+NEXT_PUBLIC_API_URL=
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 ```
 
-## API Documentation
+---
 
-The API follows RESTful conventions and uses JSON for request/response bodies. All endpoints require authentication except for product browsing and user registration.
+## **📘 API Overview**
 
-### Authentication Endpoints
+### **🔐 Authentication**
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/auth/register` | Register new user | No |
-| POST | `/auth/login` | User login | No |
+| Method | Endpoint         | Description |
+| ------ | ---------------- | ----------- |
+| POST   | `/auth/register` | ✍️ Register |
+| POST   | `/auth/login`    | 🔑 Login    |
 
-### Product Endpoints
+### **🛍️ Products**
 
-| Method | Endpoint | Description | Auth Required | Role |
-|--------|----------|-------------|---------------|------|
-| GET | `/products` | Get all products (with filtering) | No | - |
-| GET | `/products/:id` | Get product details | No | - |
-| POST | `/products` | Create new product | Yes | Seller |
-| PUT | `/products/:id` | Update product | Yes | Seller |
-| DELETE | `/products/:id` | Delete product | Yes | Seller |
+| Method | Endpoint        | Description     | Role   |
+| ------ | --------------- | --------------- | ------ |
+| GET    | `/products`     | 📦 All products | -      |
+| POST   | `/products`     | ➕ Create        | Seller |
+| PUT    | `/products/:id` | ✏️ Update       | Seller |
+| DELETE | `/products/:id` | ❌ Delete        | Seller |
 
-**Query Parameters for GET /products:**
-- `search`: Search term
-- `category`: Category ID
-- `minPrice` & `maxPrice`: Price range
-- `page` & `limit`: Pagination
+### **🛒 Cart**
 
-### Cart Endpoints
+| Method | Endpoint          | Description  |
+| ------ | ----------------- | ------------ |
+| GET    | `/cart`           | 🛒 View cart |
+| POST   | `/cart/items`     | ➕ Add item   |
+| PUT    | `/cart/items/:id` | 🔄 Update    |
+| DELETE | `/cart/items/:id` | ❌ Remove     |
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/cart` | Get user's cart | Yes |
-| POST | `/cart/items` | Add item to cart | Yes |
-| PUT | `/cart/items/:id` | Update cart item | Yes |
-| DELETE | `/cart/items/:id` | Remove cart item | Yes |
+### **📦 Orders**
 
-### Order Endpoints
+| Method | Endpoint             | Description      |
+| ------ | -------------------- | ---------------- |
+| POST   | `/orders`            | 🧾 Create order  |
+| GET    | `/orders`            | 📦 User orders   |
+| PUT    | `/orders/:id/status` | 🔄 Update status |
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/orders` | Create order | Yes |
-| GET | `/orders` | Get user's orders | Yes |
-| GET | `/orders/:id` | Get order details | Yes |
-| PUT | `/orders/:id/status` | Update order status | Yes (Admin/Seller) |
+### **⭐ Reviews**
 
-### Review Endpoints
+| Method | Endpoint                | Description   |
+| ------ | ----------------------- | ------------- |
+| GET    | `/reviews/products/:id` | ⭐ Get reviews |
+| POST   | `/reviews/products/:id` | ➕ Add review  |
+| PUT    | `/reviews/:id`          | ✏️ Edit       |
+| DELETE | `/reviews/:id`          | ❌ Delete      |
 
-| Method | Endpoint | Description | Auth Required | Role |
-|--------|----------|-------------|---------------|------|
-| GET | `/reviews/products/:productId` | Get product reviews | No | - |
-| POST | `/reviews/products/:productId` | Create review | Yes | Buyer |
-| PUT | `/reviews/:id` | Update review | Yes | Review Owner |
-| DELETE | `/reviews/:id` | Delete review | Yes | Review Owner |
-| PUT | `/reviews/:id/moderate` | Moderate review | Yes | Seller |
+---
 
-### Favorites Endpoints
+## **🚀 Deployment**
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/favorites` | Get user's favorites | Yes |
-| POST | `/favorites` | Add to favorites | Yes |
-| DELETE | `/favorites/:productId` | Remove from favorites | Yes |
-| GET | `/favorites/check/:productId` | Check if favorited | Yes |
-
-### Category Endpoints
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/categories` | Get all categories | No |
-| POST | `/categories` | Create category | Yes (Admin) |
-
-## Deployment Guide
-
-### Production Backend Deployment
-
-1. **Build the application**
-   ```bash
-   cd backend
-   npm run build
-   ```
-
-2. **Set production environment variables**
-   - Use production database URL
-   - Configure production Stripe keys
-   - Set secure JWT secret
-
-3. **Run migrations**
-   ```bash
-   npx prisma migrate deploy
-   ```
-
-4. **Start the server**
-   ```bash
-   npm run start:prod
-   # Or use PM2
-   pm2 start dist/main.js --name mfu-backend
-   ```
-
-### Production Frontend Deployment
-
-1. **Build the application**
-   ```bash
-   cd frontend
-   npm run build
-   ```
-
-2. **Configure production environment**
-   - Set production API URL
-   - Use production Stripe publishable key
-
-3. **Deploy to hosting platform**
-   - Vercel: `vercel --prod`
-   - Netlify: `netlify deploy --prod`
-   - Or serve static files with nginx/apache
-
-### Docker Production Deployment
+### **🛠️ Backend**
 
 ```bash
-# Build and run with docker-compose
+npm run build
+npx prisma migrate deploy
+npm run start:prod
+```
+
+Or with PM2:
+
+```bash
+pm2 start dist/main.js --name backend
+```
+
+### **🌐 Frontend**
+
+```bash
+npm run build
+```
+
+Deploy via:
+
+* ▲ Vercel
+* 🌐 Netlify
+* 🖥️ Nginx / Apache
+
+### **🐳 Docker Production**
+
+```bash
 docker-compose -f docker-compose.prod.yml up -d
-
-# Or build individual images
-docker build -t mfu-backend ./backend
-docker build -t mfu-frontend ./frontend
 ```
 
-### Environment Setup for Production
+---
 
-- Use managed PostgreSQL (AWS RDS, Google Cloud SQL, etc.)
-- Configure SSL/TLS certificates
-- Set up proper CORS policies
-- Implement rate limiting
-- Configure monitoring and logging
+## **🧪 Testing**
 
-## Usage Examples
+### **Backend**
 
-### User Registration and Login
-```javascript
-// Register as a seller
-const registerData = {
-  name: "John Doe",
-  email: "john@example.com",
-  password: "securepassword",
-  role: "SELLER"
-};
-
-fetch('/auth/register', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(registerData)
-});
-
-// Login
-const loginData = {
-  email: "john@example.com",
-  password: "securepassword"
-};
-
-fetch('/auth/login', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(loginData)
-}).then(res => res.json()).then(data => {
-  localStorage.setItem('token', data.access_token);
-});
-```
-
-### Creating a Product Listing
-```javascript
-const productData = {
-  title: "Vintage Guitar",
-  description: "Well-maintained acoustic guitar",
-  price: 299.99,
-  categoryId: 3
-};
-
-fetch('/products', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`
-  },
-  body: JSON.stringify(productData)
-});
-```
-
-### Searching Products
-```javascript
-// Search for "guitar" in electronics category, price 100-500
-fetch('/products?search=guitar&category=3&minPrice=100&maxPrice=500&page=1&limit=20')
-  .then(res => res.json())
-  .then(products => console.log(products));
-```
-
-### Adding to Cart and Checkout
-```javascript
-// Add item to cart
-const cartItem = {
-  productId: 123,
-  quantity: 1
-};
-
-fetch('/cart/items', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`
-  },
-  body: JSON.stringify(cartItem)
-});
-
-// Create order
-fetch('/orders', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`
-  },
-  body: JSON.stringify({ /* order data */ })
-});
-```
-
-### Managing Reviews
-```javascript
-// Get product reviews
-fetch('/reviews/products/123')
-  .then(res => res.json())
-  .then(reviews => console.log(reviews));
-
-// Submit a review
-const reviewData = {
-  rating: 5,
-  comment: "Great product, fast shipping!"
-};
-
-fetch('/reviews/products/123', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`
-  },
-  body: JSON.stringify(reviewData)
-});
-```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-### Development Guidelines
-
-- Follow TypeScript best practices
-- Write tests for new features
-- Use conventional commit messages
-- Ensure code passes linting and formatting
-- Update documentation for API changes
-
-## Testing
-
-### Backend Tests
 ```bash
-cd backend
 npm run test
-npm run test:cov  # With coverage
-npm run test:e2e  # End-to-end tests
+npm run test:cov
+npm run test:e2e
 ```
 
-### Frontend Tests
+### **Frontend**
+
 ```bash
-cd frontend
 npm run test
 ```
 
-## Troubleshooting
+---
 
-### Common Issues
+## **❗ Troubleshooting**
 
-1. **Database connection errors**
-   - Ensure PostgreSQL is running
-   - Check DATABASE_URL in .env
-   - Run `npx prisma migrate dev`
+### ❌ DB connection errors
 
-2. **Authentication issues**
-   - Verify JWT_SECRET is set
-   - Check token expiration (default: 24h)
+✔ Check PostgreSQL
+✔ Check `DATABASE_URL`
 
-3. **Payment processing errors**
-   - Verify Stripe keys are correct
-   - Check webhook endpoints are configured
+### ❌ JWT errors
 
-4. **Image upload failures**
-   - Confirm Cloudinary credentials
-   - Check file size limits
+✔ Ensure `JWT_SECRET` exists
 
-### Useful Commands
+### ❌ Stripe issues
 
-```bash
-# Reset database
-npx prisma migrate reset
+✔ Verify Stripe keys
 
-# Generate Prisma client
-npx prisma generate
+### ❌ Image upload failed
 
-# View database in browser
-npx prisma studio
+✔ Check Cloudinary credentials
 
-# Seed database (if available)
-npx prisma db seed
-```
+---
 
-## License
+## **🤝 Contributing**
 
-This project is licensed under the ISC License - see the LICENSE file for details.
+1. 🍴 Fork repo
+2. 🌱 Create feature branch
+3. 💬 Conventional commit message
+4. 🚀 Push
+5. 🔥 Open Pull Request
 
-## Support
+---
 
-For questions or support, please open an issue in the GitHub repository or contact the development team.
-#   m f u - 2 n d h a n d  
- 
+## **📄 License**
+
+Licensed under the **ISC License**.
+
+---
+
+
