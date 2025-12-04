@@ -8,20 +8,30 @@ import { ProductCard } from '../../components/common/product-card';
 interface FavoriteProduct {
   id: number;
   title: string;
+  description: string;
   price: number;
-  images: { url: string }[];
-  condition: string;
+  sellerId: number;
+  categoryId?: number;
   createdAt: string;
   seller: {
     id: number;
     name: string;
+    email: string;
+    role: 'BUYER' | 'SELLER' | 'ADMIN';
+    isActive: boolean;
+    createdAt: string;
   };
-  category: {
+  category?: {
     id: number;
     name: string;
+    description?: string;
+    parentId?: number;
+    createdAt: string;
+    updatedAt: string;
+    products: any[];
   };
-  averageRating?: number;
-  totalReviews?: number;
+  images: { id: number; url: string; productId: number; createdAt: string }[];
+  reviews: any[];
 }
 
 export default function FavoritesPage() {

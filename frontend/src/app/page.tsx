@@ -16,7 +16,7 @@ export default function Home() {
       price: 29.99,
       sellerId: 1,
       createdAt: '2023-01-01T00:00:00.000Z',
-      seller: { id: 1, name: 'Seller1', email: 'seller1@example.com', role: 'SELLER' as const, createdAt: '2023-01-01T00:00:00.000Z' },
+      seller: { id: 1, name: 'Seller1', email: 'seller1@example.com', role: 'SELLER' as const, isActive: true, createdAt: '2023-01-01T00:00:00.000Z' },
       images: [{ id: 1, url: '/placeholder.jpg', productId: 1, createdAt: '2023-01-01T00:00:00.000Z' }],
       reviews: []
     },
