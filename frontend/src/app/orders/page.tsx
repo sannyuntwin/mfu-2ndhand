@@ -1,0 +1,179 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+
+interface OrderItem {
+  id: number;
+  quantity: number;
+  price: number;
+  product: {
+    id: number;
+    title: string;
+    price: number;
+    images: { url: string }[];
+  };
+}
+
+interface Order {
+  id: number;
+  total: number;
+  status: string;
+  createdAt: string;
+  items: OrderItem[];
+}
+
+export default function OrdersPage() {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const fetchOrders = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/orders', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+
+      if (response.ok) {
+        const ordersData = await response.json();
+        setOrders(ordersData);
+      } else {
+        console.error('Failed to fetch orders');
+      }
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'confirmed':
+        return 'bg-blue-100 text-blue-800';
+      case 'shipped':
+        return 'bg-purple-100 text-purple-800';
+      case 'delivered':
+        return 'bg-green-100 text-green-800';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your orders...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">My Orders</h1>
+          <p className="text-gray-600 mt-2">Track your order history</p>
+        </div>
+
+        {orders.length === 0 ? (
+          <Card>
+            <CardContent className="text-center py-12">
+              <div className="mb-6">
+                <svg className="mx-auto h-24 w-24 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-medium text-gray-900 mb-2">No orders yet</h3>
+              <p className="text-gray-600 mb-6">When you place your first order, it will appear here.</p>
+              <Link href="/products">
+                <Button className="bg-orange-500 hover:bg-orange-600">
+                  Start Shopping
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-6">
+            {orders.map((order) => (
+              <Card key={order.id}>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-lg font-semibold">Order #{order.id}</h3>
+                      <p className="text-sm text-gray-600">
+                        Placed on {new Date(order.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <Badge className={getStatusColor(order.status)}>
+                        {order.status.toUpperCase()}
+                      </Badge>
+                      <p className="text-lg font-bold text-gray-900 mt-2">
+                        ${order.total.toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    {order.items.slice(0, 2).map((item) => (
+                      <div key={item.id} className="flex items-center space-x-4">
+                        <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                          {item.product.images?.[0]?.url ? (
+                            <img
+                              src={item.product.images[0].url}
+                              alt={item.product.title}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-6 h-6 bg-gray-400 rounded"></div>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-medium">{item.product.title}</h4>
+                          <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p>
+                        </div>
+                      </div>
+                    ))}
+
+                    {order.items.length > 2 && (
+                      <p className="text-sm text-gray-600">
+                        And {order.items.length - 2} more item{order.items.length - 2 !== 1 ? 's' : ''}...
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="mt-6 pt-4 border-t">
+                    <Link href={`/orders/${order.id}`}>
+                      <Button variant="outline" className="w-full">
+                        View Order Details
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
