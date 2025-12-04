@@ -44,8 +44,10 @@ RUN npm ci --only=production && npm cache clean --force
 # Copy built application
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/uploads ./uploads
 COPY --from=builder /app/node_modules ./node_modules
+
+# Create uploads directory (don't copy from builder since it doesn't exist there)
+RUN mkdir -p ./uploads
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && adduser -S nestjs -u 1001
