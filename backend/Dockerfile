@@ -16,15 +16,15 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Fix Prisma binary permission issue
+# Fix Prisma + TypeScript permissions
 RUN chmod +x node_modules/.bin/prisma
+RUN chmod +x node_modules/.bin/tsc
 
 # Generate Prisma client
 RUN npx prisma generate
 
 # Build the application
 RUN npm run build
-
 
 
 # ------------------ PRODUCTION STAGE ------------------
