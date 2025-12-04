@@ -97,7 +97,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               ${product.price}
             </div>
 
-            <AddToCartButton product={product} />
+            <AddToCartButton productId={product.id} />
             <Button variant="outline" className="w-full" size="lg" disabled>
               Add to Favorites (Client Component Required)
             </Button>
@@ -109,7 +109,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <CardContent className="space-y-2">
                 <p className="font-medium">{product.seller.name}</p>
                 <p className="text-sm text-gray-600">
-                  Member since {new Date(product.seller.createdAt).getFullYear()}
+                  Member since {product.seller.createdAt ? new Date(product.seller.createdAt).getFullYear() : 'N/A'}
                 </p>
                 <Button variant="link" className="p-0 h-auto text-orange-600">
                   View Seller Profile

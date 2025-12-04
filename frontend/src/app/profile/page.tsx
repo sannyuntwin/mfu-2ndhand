@@ -178,7 +178,7 @@ export default function ProfilePage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleProfileSubmit} className="space-y-4">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700">
               Name
@@ -186,8 +186,8 @@ export default function ProfilePage() {
             <input
               type="text"
               id="name"
-              value={formData.name}
-              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              value={profileData.name}
+              onChange={(e) => setProfileData(prev => ({ ...prev, name: e.target.value }))}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               required
             />
@@ -200,8 +200,8 @@ export default function ProfilePage() {
             <input
               type="email"
               id="email"
-              value={formData.email}
-              onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+              value={profileData.email}
+              onChange={(e) => setProfileData(prev => ({ ...prev, email: e.target.value }))}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               required
             />

@@ -15,10 +15,10 @@ export interface Product {
   sellerId: number;
   categoryId?: number;
   createdAt: string;
-  seller: User;
+  seller: Partial<User>;
   category?: Category;
   images: ProductImage[];
-  reviews: Review[];
+  reviews?: Review[];
 }
 
 export interface ProductImage {

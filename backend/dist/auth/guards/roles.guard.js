@@ -6,18 +6,22 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ProductsModule = void 0;
+exports.RolesGuard = void 0;
 const common_1 = require("@nestjs/common");
-const products_controller_1 = require("./products.controller");
-const products_service_1 = require("./products.service");
-const prisma_service_1 = require("../prisma/prisma.service");
-let ProductsModule = class ProductsModule {
+let RolesGuard = class RolesGuard {
+    canActivate(context) {
+        const req = context.switchToHttp().getRequest();
+        const user = req.user;
+        if (!user)
+            throw new common_1.ForbiddenException('No user data');
+        if (user.role !== 'admin') {
+            throw new common_1.ForbiddenException('Admin only');
+        }
+        return true;
+    }
 };
-exports.ProductsModule = ProductsModule;
-exports.ProductsModule = ProductsModule = __decorate([
-    (0, common_1.Module)({
-        controllers: [products_controller_1.ProductsController],
-        providers: [products_service_1.ProductsService, prisma_service_1.PrismaService],
-    })
-], ProductsModule);
-//# sourceMappingURL=products.module.js.map
+exports.RolesGuard = RolesGuard;
+exports.RolesGuard = RolesGuard = __decorate([
+    (0, common_1.Injectable)()
+], RolesGuard);
+//# sourceMappingURL=roles.guard.js.map

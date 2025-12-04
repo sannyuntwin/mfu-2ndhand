@@ -363,10 +363,7 @@ export default function SearchPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
                 {currentProducts.map(product => (
                   <div key={product.id} className="relative">
-                    <ProductCard product={product} />
-                    <div className="absolute top-2 right-2">
-                      <FavoriteToggle productId={product.id} />
-                    </div>
+                    <ProductCard product={product as any} />
                   </div>
                 ))}
               </div>

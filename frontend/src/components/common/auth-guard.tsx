@@ -9,6 +9,7 @@ interface AuthGuardProps {
   requireAuth?: boolean;
   redirectTo?: string;
   sellerOnly?: boolean;
+  adminOnly?: boolean;
 }
 
 export default function AuthGuard({

@@ -6,18 +6,18 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ProductsModule = void 0;
+exports.BuyerModule = void 0;
 const common_1 = require("@nestjs/common");
-const products_controller_1 = require("./products.controller");
-const products_service_1 = require("./products.service");
+const buyer_controller_1 = require("./buyer.controller");
+const buyer_service_1 = require("./buyer.service");
 const prisma_service_1 = require("../prisma/prisma.service");
-let ProductsModule = class ProductsModule {
+let BuyerModule = class BuyerModule {
 };
-exports.ProductsModule = ProductsModule;
-exports.ProductsModule = ProductsModule = __decorate([
+exports.BuyerModule = BuyerModule;
+exports.BuyerModule = BuyerModule = __decorate([
     (0, common_1.Module)({
-        controllers: [products_controller_1.ProductsController],
-        providers: [products_service_1.ProductsService, prisma_service_1.PrismaService],
+        controllers: [buyer_controller_1.BuyerController],
+        providers: [buyer_service_1.BuyerService, prisma_service_1.PrismaService],
     })
-], ProductsModule);
-//# sourceMappingURL=products.module.js.map
+], BuyerModule);
+//# sourceMappingURL=buyer.module.js.map
