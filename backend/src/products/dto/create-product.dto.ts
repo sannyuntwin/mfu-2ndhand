@@ -1,19 +1,28 @@
-import { IsNotEmpty, IsString, IsNumber, IsPositive, IsInt } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
 
 export class CreateProductDto {
   @IsNotEmpty()
-  @IsString()
-  title!: string;
+  title: string;
 
   @IsNotEmpty()
-  @IsString()
-  description!: string;
+  description: string;
 
-  @IsNotEmpty()
   @IsNumber()
-  @IsPositive()
-  price!: number;
+  price: number;
 
-  @IsInt()
+  @IsOptional()
+  imageUrl?: string;
+
+  @IsOptional()
+  @IsNumber()
   categoryId?: number;
+
+  @IsOptional()
+  condition?: string;
+
+  @IsOptional()
+  brand?: string;
+
+  @IsOptional()
+  tags?: string; // stored as JSON string
 }
