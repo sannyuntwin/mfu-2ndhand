@@ -3,15 +3,21 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
+# Prisma needs OpenSSL on Alpine
+RUN apk add --no-cache openssl
+
 # Copy package files
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install dependencies including dev dependencies for building
+# Install dependencies including dev dependencies
 RUN npm ci
 
 # Copy source code
 COPY . .
+
+# Fix Prisma binary permission issue
+RUN chmod +x node_modules/.bin/prisma
 
 # Generate Prisma client
 RUN npx prisma generate
@@ -19,10 +25,15 @@ RUN npx prisma generate
 # Build the application
 RUN npm run build
 
-# Production stage
+
+
+# ------------------ PRODUCTION STAGE ------------------
 FROM node:18-alpine AS production
 
 WORKDIR /app
+
+# Prisma needs OpenSSL in production too
+RUN apk add --no-cache openssl
 
 # Copy package files
 COPY package*.json ./
@@ -30,16 +41,16 @@ COPY package*.json ./
 # Install only production dependencies
 RUN npm ci --only=production && npm cache clean --force
 
-# Copy built application from builder stage
+# Copy built application
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/uploads ./uploads
+COPY --from=builder /app/node_modules ./node_modules
 
-# Create non-root user for security
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nestjs -u 1001
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && adduser -S nestjs -u 1001
 
-# Change ownership of the app directory to nodejs user
+# Set permissions
 RUN chown -R nestjs:nodejs /app
 USER nestjs
 
