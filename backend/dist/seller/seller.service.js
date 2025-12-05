@@ -59,19 +59,29 @@ let SellerService = class SellerService {
     // 2. Products (CRUD)
     // =============================
     async createProduct(userId, dto) {
+        const productData = {
+            title: dto.title,
+            description: dto.description,
+            price: dto.price,
+            condition: dto.condition,
+            brand: dto.brand,
+            tags: dto.tags,
+            categoryId: dto.categoryId,
+            sellerId: userId,
+            isApproved: false, // Admin will approve
+        };
+        // Handle images
+        if (dto.images && Array.isArray(dto.images) && dto.images.length > 0) {
+            productData.imageUrl = dto.images[0]; // Set first image as main imageUrl
+            productData.images = {
+                create: dto.images.map((url) => ({ url })),
+            };
+        }
+        else if (dto.imageUrl) {
+            productData.imageUrl = dto.imageUrl;
+        }
         return this.prisma.product.create({
-            data: {
-                title: dto.title,
-                description: dto.description,
-                price: dto.price,
-                imageUrl: dto.imageUrl,
-                condition: dto.condition,
-                brand: dto.brand,
-                tags: dto.tags,
-                categoryId: dto.categoryId,
-                sellerId: userId,
-                isApproved: false, // Admin will approve
-            },
+            data: productData,
         });
     }
     async getMyProducts(userId) {

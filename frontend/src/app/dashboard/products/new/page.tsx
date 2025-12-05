@@ -2,21 +2,25 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { productService } from '@/services/product.service';
+import { sellerService } from '@/services/seller.service';
 import { categoryService } from '@/services/category.service';
 import AuthGuard from '@/components/common/auth-guard';
 
 export default function NewProductPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [uploadingImages, setUploadingImages] = useState(false);
   const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     price: '',
     categoryId: '',
-    imageUrls: ['']
+    condition: '',
+    brand: '',
+    tags: ''
   });
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Fetch categories from backend
@@ -38,28 +42,42 @@ export default function NewProductPage() {
     setErrors({});
 
     try {
+      // First upload images
+      setUploadingImages(true);
+      const uploadedUrls: string[] = [];
+      for (const file of selectedFiles) {
+        const response = await sellerService.uploadImage(file);
+        uploadedUrls.push(response.url);
+      }
+      setUploadingImages(false);
+
       const productData = {
-        ...formData,
+        title: formData.title,
+        description: formData.description,
         price: parseFloat(formData.price),
         categoryId: formData.categoryId ? parseInt(formData.categoryId) : undefined,
-        images: formData.imageUrls.filter(url => url.trim() !== '')
+        condition: formData.condition || undefined,
+        brand: formData.brand || undefined,
+        tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : undefined,
+        images: uploadedUrls
       };
 
-      await productService.create(productData); // use productService
+      await sellerService.createProduct(productData);
       router.push('/dashboard/products');
     } catch (error: any) {
       console.error(error);
       setErrors({ general: 'Failed to create product. Please check fields and try again.' });
     } finally {
       setLoading(false);
+      setUploadingImages(false);
     }
   };
 
-  const addImageUrl = () => setFormData(prev => ({ ...prev, imageUrls: [...prev.imageUrls, ''] }));
-  const updateImageUrl = (i: number, val: string) =>
-    setFormData(prev => ({ ...prev, imageUrls: prev.imageUrls.map((url, idx) => idx === i ? val : url) }));
-  const removeImageUrl = (i: number) =>
-    setFormData(prev => ({ ...prev, imageUrls: prev.imageUrls.filter((_, idx) => idx !== i) }));
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setSelectedFiles(Array.from(e.target.files));
+    }
+  };
 
   return (
     <AuthGuard requireAuth sellerOnly>
@@ -125,30 +143,58 @@ export default function NewProductPage() {
               </div>
             </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Condition</label>
+                <select
+                  value={formData.condition}
+                  onChange={e => setFormData(prev => ({ ...prev, condition: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select condition</option>
+                  <option value="NEW">New</option>
+                  <option value="GOOD">Good</option>
+                  <option value="USED">Used</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Brand</label>
+                <input
+                  type="text"
+                  value={formData.brand}
+                  onChange={e => setFormData(prev => ({ ...prev, brand: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Tags (comma separated)</label>
+                <input
+                  type="text"
+                  value={formData.tags}
+                  onChange={e => setFormData(prev => ({ ...prev, tags: e.target.value }))}
+                  placeholder="tag1, tag2, tag3"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
             {/* Images */}
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-medium text-gray-700">Product Images</label>
-                <button type="button" onClick={addImageUrl} className="text-blue-600 text-sm">
-                  + Add Image
-                </button>
-              </div>
-              {formData.imageUrls.map((url, i) => (
-                <div key={i} className="flex space-x-2 mb-2">
-                  <input
-                    type="url"
-                    value={url}
-                    onChange={e => updateImageUrl(i, e.target.value)}
-                    placeholder="https://example.com/image.jpg"
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  {formData.imageUrls.length > 1 && (
-                    <button type="button" onClick={() => removeImageUrl(i)} className="px-3 py-2 text-red-600">
-                      Remove
-                    </button>
-                  )}
+              <label className="block text-sm font-medium text-gray-700 mb-2">Product Images</label>
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleFileChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              {selectedFiles.length > 0 && (
+                <div className="mt-2 text-sm text-gray-600">
+                  {selectedFiles.length} file(s) selected
                 </div>
-              ))}
+              )}
             </div>
 
             <div className="flex space-x-4 pt-6 border-t">
@@ -157,10 +203,10 @@ export default function NewProductPage() {
               </button>
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || uploadingImages}
                 className="flex-1 bg-blue-600 text-white py-2 rounded-md disabled:opacity-50"
               >
-                {loading ? 'Creating Product...' : 'Create Product'}
+                {uploadingImages ? 'Uploading Images...' : loading ? 'Creating Product...' : 'Create Product'}
               </button>
             </div>
           </form>

@@ -14,6 +14,8 @@ const buyer_module_1 = require("./buyer/buyer.module");
 const products_module_1 = require("./products/products.module");
 const seller_module_1 = require("./seller/seller.module");
 const categories_module_1 = require("./categories/categories.module");
+const payments_module_1 = require("./payments/payments.module");
+const uploads_module_1 = require("./uploads/uploads.module");
 const prisma_module_1 = require("./prisma/prisma.module");
 let AppModule = class AppModule {
 };
@@ -30,6 +32,8 @@ exports.AppModule = AppModule = __decorate([
             products_module_1.ProductsModule,
             seller_module_1.SellerModule,
             categories_module_1.CategoriesModule,
+            payments_module_1.PaymentsModule,
+            uploads_module_1.UploadsModule,
         ],
     })
 ], AppModule);

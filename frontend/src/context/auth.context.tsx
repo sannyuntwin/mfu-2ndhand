@@ -1,7 +1,8 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User, AuthContextType } from '@/types';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { User, AuthContextType } from "@/types";
+import { authService } from "@/services/auth.service";
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -10,89 +11,93 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in on mount
-    const token = localStorage.getItem('token');
-    const userData = localStorage.getItem('user');
+    const token = localStorage.getItem("token");
+    const userData = localStorage.getItem("user");
 
-    if (token && userData && userData !== 'undefined') {
+    if (token && userData && userData !== "undefined") {
       try {
         setUser(JSON.parse(userData));
       } catch (error) {
-        console.error('Error parsing user data from localStorage:', error);
-        // Clear corrupted data
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        console.error("Invalid stored user, resetting.");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
       }
     }
 
     setLoading(false);
   }, []);
 
+  // --------------------------
+  // LOGIN USING authService
+  // --------------------------
   const login = async (email: string, password: string) => {
     setLoading(true);
+
     try {
-      const response = await fetch('http://localhost:5000/api/v1/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      // Step 1: Call /auth/login
+      const loginRes = await authService.login({ email, password });
+      console.log("🔥 LOGIN RESPONSE:", loginRes);
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const errorMessage = errorData.message || 'Login failed';
-        throw new Error(errorMessage);
-      }
+      const token = loginRes.token;
+      if (!token) throw new Error("Login failed: No token returned.");
 
-      const data = await response.json();
-      const { user: userData, token } = data;
+      // Store token
+      localStorage.setItem("token", token);
 
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(userData));
-      setUser(userData);
+      // Step 2: Fetch user profile (/auth/me)
+      const meRes = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1"}/auth/me`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-      // Redirect based on user role after successful login
-      if (userData.role === 'ADMIN') {
-        window.location.href = '/admin/dashboard';
-      } else if (userData.role === 'SELLER') {
-        window.location.href = '/dashboard';
-      } else {
-        window.location.href = '/';
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      throw error;
+      const meData = await meRes.json();
+      console.log("🔥 USER PROFILE:", meData);
+
+      const userObj = meData.user || meData.data || meData;
+
+      if (!userObj) throw new Error("Failed to fetch user profile.");
+
+      // Store user
+      localStorage.setItem("user", JSON.stringify(userObj));
+      setUser(userObj);
+
+      // Redirect based on role
+      const role = userObj.role;
+      if (role === "ADMIN") window.location.href = "/admin/dashboard";
+      else if (role === "SELLER") window.location.href = "/dashboard";
+      else window.location.href = "/";
+
+    } catch (err) {
+      console.error("Login Error:", err);
+      throw err;
     } finally {
       setLoading(false);
     }
   };
 
-  const register = async (userData: { name: string; email: string; password: string; role: string }) => {
+  // --------------------------
+  // REGISTER USING authService
+  // --------------------------
+  const register = async (data: any) => {
     setLoading(true);
+
     try {
-      const response = await fetch('http://localhost:5000/api/v1/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-      });
+      const res = await authService.register(data);
+      console.log("🔥 REGISTER RESPONSE:", res);
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const errorMessage = errorData.message || 'Registration failed';
-        throw new Error(errorMessage);
-      }
+      const token = res.token;
+      const newUser = res.user;
 
-      const data = await response.json();
-      const { user: newUser, token } = data;
+      if (token) localStorage.setItem("token", token);
+      if (newUser) localStorage.setItem("user", JSON.stringify(newUser));
 
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(newUser));
       setUser(newUser);
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error("Registration error:", error);
       throw error;
     } finally {
       setLoading(false);
@@ -100,8 +105,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setUser(null);
   };
 
@@ -117,9 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
+  return ctx;
 }

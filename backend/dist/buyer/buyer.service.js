@@ -74,22 +74,33 @@ let BuyerService = class BuyerService {
     }
     // 5. GET MY CART
     getMyCarts(userId) {
-        return this.prisma.cart.findMany({
+        return this.prisma.cart.findUnique({
             where: { userId },
             include: {
-                items: { include: { product: true } },
+                items: {
+                    include: { product: true },
+                },
             },
         });
     }
     // 6. ADD TO CART
     async addToCart(userId, productId, quantity) {
-        // Find cart
-        let cart = await this.prisma.cart.findUnique({ where: { userId } });
+        // 1. Get/Create user cart
+        let cart = await this.prisma.cart.findUnique({
+            where: { userId },
+        });
         if (!cart) {
             cart = await this.prisma.cart.create({
                 data: { userId },
             });
         }
+        // 2. Validate product
+        const product = await this.prisma.product.findUnique({
+            where: { id: productId },
+        });
+        if (!product)
+            throw new common_1.NotFoundException("Product not found");
+        // 3. Check existing cart item
         const existing = await this.prisma.cartItem.findFirst({
             where: { cartId: cart.id, productId },
         });
@@ -99,10 +110,7 @@ let BuyerService = class BuyerService {
                 data: { qty: existing.qty + quantity },
             });
         }
-        // product price
-        const product = await this.prisma.product.findUnique({
-            where: { id: productId },
-        });
+        // 4. Create new cart item
         return this.prisma.cartItem.create({
             data: {
                 cartId: cart.id,
@@ -125,7 +133,7 @@ let BuyerService = class BuyerService {
         });
     }
     // 8. CREATE ORDER FROM CART
-    async createOrder(userId) {
+    async createOrder(userId, shippingAddress) {
         const cart = await this.prisma.cart.findUnique({
             where: { userId },
             include: { items: { include: { product: true } } },
@@ -135,6 +143,7 @@ let BuyerService = class BuyerService {
         const order = await this.prisma.order.create({
             data: {
                 buyerId: userId,
+                shippingAddress,
                 totalAmount: cart.items.reduce((sum, item) => sum + item.price * item.qty, 0),
                 items: {
                     create: cart.items.map((i) => ({

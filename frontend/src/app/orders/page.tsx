@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { buyerService } from '@/services/buyer.service';
 
 interface OrderItem {
   id: number;
@@ -20,7 +21,7 @@ interface OrderItem {
 
 interface Order {
   id: number;
-  total: number;
+  totalAmount: number;
   status: string;
   createdAt: string;
   items: OrderItem[];
@@ -31,25 +32,16 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchOrders();
+    loadOrders();
   }, []);
 
-  const fetchOrders = async () => {
+  const loadOrders = async () => {
     try {
-      const response = await fetch('http://localhost:5000/orders', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-
-      if (response.ok) {
-        const ordersData = await response.json();
-        setOrders(ordersData);
-      } else {
-        console.error('Failed to fetch orders');
-      }
+      const data = await buyerService.getMyOrders();
+      setOrders(data);
     } catch (error) {
-      console.error('Error fetching orders:', error);
+      console.error("Failed to load orders", error);
+      setOrders([]);
     } finally {
       setLoading(false);
     }
@@ -75,7 +67,7 @@ export default function OrdersPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="max-w-6xl mx-auto text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading your orders...</p>
         </div>
@@ -86,25 +78,15 @@ export default function OrdersPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">My Orders</h1>
-          <p className="text-gray-600 mt-2">Track your order history</p>
-        </div>
+        <h1 className="text-3xl font-bold text-gray-900 mb-6">My Orders</h1>
 
         {orders.length === 0 ? (
           <Card>
             <CardContent className="text-center py-12">
-              <div className="mb-6">
-                <svg className="mx-auto h-24 w-24 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-medium text-gray-900 mb-2">No orders yet</h3>
-              <p className="text-gray-600 mb-6">When you place your first order, it will appear here.</p>
+              <h3 className="text-xl font-medium mb-2">No orders yet</h3>
+              <p className="text-gray-600 mb-6">Your orders will appear here.</p>
               <Link href="/products">
-                <Button className="bg-orange-500 hover:bg-orange-600">
-                  Start Shopping
-                </Button>
+                <Button className="bg-orange-500 hover:bg-orange-600">Start Shopping</Button>
               </Link>
             </CardContent>
           </Card>
@@ -124,16 +106,14 @@ export default function OrdersPage() {
                       <Badge className={getStatusColor(order.status)}>
                         {order.status.toUpperCase()}
                       </Badge>
-                      <p className="text-lg font-bold text-gray-900 mt-2">
-                        ${order.total.toFixed(2)}
-                      </p>
+                      <p className="text-lg font-bold mt-2">${order.totalAmount.toFixed(2)}</p>
                     </div>
                   </div>
 
                   <div className="space-y-4">
                     {order.items.slice(0, 2).map((item) => (
                       <div key={item.id} className="flex items-center space-x-4">
-                        <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                        <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
                           {item.product.images?.[0]?.url ? (
                             <img
                               src={item.product.images[0].url}
@@ -141,22 +121,22 @@ export default function OrdersPage() {
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            <div className="w-6 h-6 bg-gray-400 rounded"></div>
+                            <div className="w-full h-full bg-gray-300" />
                           )}
                         </div>
                         <div className="flex-1">
                           <h4 className="font-medium">{item.product.title}</h4>
                           <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
                         </div>
-                        <div className="text-right">
-                          <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p>
-                        </div>
+                        <p className="font-medium">
+                          ${(item.price * item.quantity).toFixed(2)}
+                        </p>
                       </div>
                     ))}
 
                     {order.items.length > 2 && (
                       <p className="text-sm text-gray-600">
-                        And {order.items.length - 2} more item{order.items.length - 2 !== 1 ? 's' : ''}...
+                        And {order.items.length - 2} more item(s)...
                       </p>
                     )}
                   </div>

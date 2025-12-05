@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useAuth } from '@/context/auth.context';
+import { useCart } from '@/context/cart.context';
 
 export default function Header() {
   const { user, logout, loading } = useAuth();
@@ -18,6 +19,11 @@ export default function Header() {
             <Link href="/products" className="text-gray-700 hover:text-gray-900">
               Products
             </Link>
+            {user && (
+              <Link href="/orders" className="text-gray-700 hover:text-gray-900">
+                Orders
+              </Link>
+            )}
             {user?.role === 'SELLER' && (
               <Link href="/dashboard" className="text-gray-700 hover:text-gray-900">
                 Dashboard

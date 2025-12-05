@@ -39,26 +39,26 @@ let BuyerController = class BuyerController {
         return this.buyerService.getMyOrders(req.user.id);
     }
     // ================================
-    // 4. POST /buyer/orders/:id/cancel
+    // 4. PUT /buyer/orders/:id/cancel
     // ================================
-    cancelMyOrder(req, orderId) {
+    cancelOrder(req, orderId) {
         return this.buyerService.cancelMyOrder(Number(orderId), req.user.id);
     }
     // ================================
-    // 5. GET /buyer/carts
+    // 5. GET /buyer/cart
     // ================================
-    getMyCarts(req) {
+    getCart(req) {
         return this.buyerService.getMyCarts(req.user.id);
     }
     // ================================
-    // 6. POST /buyer/carts
-    // Body: { productId, qty }
+    // 6. POST /buyer/cart
+    // Body: { productId, quantity }
     // ================================
     addToCart(req, body) {
-        return this.buyerService.addToCart(req.user.id, body.productId, body.qty || 1);
+        return this.buyerService.addToCart(req.user.id, body.productId, body.quantity || 1);
     }
     // ================================
-    // 7. DELETE /buyer/carts/:itemId
+    // 7. DELETE /buyer/cart/:itemId
     // ================================
     removeFromCart(req, itemId) {
         return this.buyerService.removeFromCart(req.user.id, Number(itemId));
@@ -66,8 +66,8 @@ let BuyerController = class BuyerController {
     // ================================
     // 8. POST /buyer/orders  (Create order)
     // ================================
-    createOrder(req) {
-        return this.buyerService.createOrder(req.user.id);
+    createOrder(req, body) {
+        return this.buyerService.createOrder(req.user.id, body.shippingAddress);
     }
 };
 exports.BuyerController = BuyerController;
@@ -94,20 +94,20 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], BuyerController.prototype, "getMyOrders", null);
 __decorate([
-    (0, common_1.Post)('orders/:id/cancel'),
+    (0, common_1.Put)('orders/:id/cancel'),
     __param(0, (0, common_1.Req)()),
     __param(1, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, Number]),
     __metadata("design:returntype", void 0)
-], BuyerController.prototype, "cancelMyOrder", null);
+], BuyerController.prototype, "cancelOrder", null);
 __decorate([
     (0, common_1.Get)('carts'),
     __param(0, (0, common_1.Req)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
-], BuyerController.prototype, "getMyCarts", null);
+], BuyerController.prototype, "getCart", null);
 __decorate([
     (0, common_1.Post)('carts'),
     __param(0, (0, common_1.Req)()),
@@ -117,7 +117,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], BuyerController.prototype, "addToCart", null);
 __decorate([
-    (0, common_1.Delete)('carts/:itemId'),
+    (0, common_1.Delete)('cart/:itemId'),
     __param(0, (0, common_1.Req)()),
     __param(1, (0, common_1.Param)('itemId')),
     __metadata("design:type", Function),
@@ -127,8 +127,9 @@ __decorate([
 __decorate([
     (0, common_1.Post)('orders'),
     __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", void 0)
 ], BuyerController.prototype, "createOrder", null);
 exports.BuyerController = BuyerController = __decorate([

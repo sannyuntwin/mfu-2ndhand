@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../../context/auth.context';
 import AuthGuard from '../../components/common/auth-guard';
+import { sellerService } from '../../services/seller.service';
 
 interface DashboardStats {
   totalProducts: number;
@@ -30,24 +31,18 @@ export default function DashboardPage() {
 
   const loadDashboardStats = async () => {
     try {
-      // Get seller's products
-      const productsResponse = await fetch('http://localhost:5000/api/products', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+      // Get dashboard stats and products
+      const [dashboardData, productsData] = await Promise.all([
+        sellerService.getDashboard(),
+        sellerService.getMyProducts()
+      ]);
+
+      setStats({
+        totalProducts: dashboardData.productCount,
+        totalOrders: dashboardData.deliveredOrders,
+        totalRevenue: dashboardData.revenue,
+        recentProducts: productsData.slice(0, 5)
       });
-
-      if (productsResponse.ok) {
-        const productsData = await productsResponse.json();
-        const sellerProducts = productsData.products.filter((p: any) => p.sellerId === user?.id);
-
-        setStats({
-          totalProducts: sellerProducts.length,
-          totalOrders: 0, // Would need orders API for seller
-          totalRevenue: sellerProducts.reduce((sum: number, p: any) => sum + p.price, 0),
-          recentProducts: sellerProducts.slice(0, 5)
-        });
-      }
     } catch (error) {
       console.error('Error loading dashboard stats:', error);
     } finally {

@@ -15,27 +15,37 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UploadsController = void 0;
 const common_1 = require("@nestjs/common");
 const platform_express_1 = require("@nestjs/platform-express");
-const multer_1 = require("multer");
-const path_1 = require("path");
 const swagger_1 = require("@nestjs/swagger");
+const image_processing_service_1 = require("./image-processing.service");
 let UploadsController = class UploadsController {
+    constructor(imageProcessingService) {
+        this.imageProcessingService = imageProcessingService;
+    }
     async uploadImage(file) {
         if (!file) {
             throw new common_1.BadRequestException('No file uploaded');
         }
-        return {
-            message: 'Image uploaded successfully',
-            filename: file.filename,
-            path: `/uploads/${file.filename}`,
-            size: file.size,
-            mimetype: file.mimetype
-        };
+        if (!file.mimetype.startsWith('image/')) {
+            throw new common_1.BadRequestException('Only image files are allowed!');
+        }
+        try {
+            const imageUrl = await this.imageProcessingService.processImage(file);
+            return {
+                message: 'Image uploaded successfully',
+                url: imageUrl,
+                size: file.size,
+                mimetype: file.mimetype
+            };
+        }
+        catch (error) {
+            throw new common_1.BadRequestException('Failed to upload image');
+        }
     }
 };
 exports.UploadsController = UploadsController;
 __decorate([
     (0, common_1.Post)('image'),
-    (0, swagger_1.ApiOperation)({ summary: 'Upload product image' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Upload product image to Cloudinary' }),
     (0, swagger_1.ApiConsumes)('multipart/form-data'),
     (0, swagger_1.ApiBody)({
         schema: {
@@ -50,20 +60,6 @@ __decorate([
         }
     }),
     (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file', {
-        storage: (0, multer_1.diskStorage)({
-            destination: './uploads',
-            filename: (req, file, callback) => {
-                const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-                const ext = (0, path_1.extname)(file.originalname);
-                callback(null, `product-${uniqueSuffix}${ext}`);
-            },
-        }),
-        fileFilter: (req, file, callback) => {
-            if (!file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
-                return callback(new common_1.BadRequestException('Only image files are allowed!'), false);
-            }
-            callback(null, true);
-        },
         limits: {
             fileSize: 5 * 1024 * 1024, // 5MB
         },
@@ -75,6 +71,7 @@ __decorate([
 ], UploadsController.prototype, "uploadImage", null);
 exports.UploadsController = UploadsController = __decorate([
     (0, swagger_1.ApiTags)('Uploads'),
-    (0, common_1.Controller)('uploads')
+    (0, common_1.Controller)('uploads'),
+    __metadata("design:paramtypes", [image_processing_service_1.ImageProcessingService])
 ], UploadsController);
 //# sourceMappingURL=uploads.controller.js.map

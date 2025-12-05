@@ -71,50 +71,60 @@ export class BuyerService {
 
   // 5. GET MY CART
   getMyCarts(userId: number) {
-    return this.prisma.cart.findMany({
-      where: { userId },
-      include: {
-        items: { include: { product: true } },
+  return this.prisma.cart.findUnique({
+    where: { userId },
+    include: {
+      items: {
+        include: { product: true },
       },
-    });
+    },
+  });
   }
+
 
   // 6. ADD TO CART
   async addToCart(userId: number, productId: number, quantity: number) {
-    // Find cart
-    let cart = await this.prisma.cart.findUnique({ where: { userId } });
+  // 1. Get/Create user cart
+  let cart = await this.prisma.cart.findUnique({
+    where: { userId },
+  });
 
-    if (!cart) {
-      cart = await this.prisma.cart.create({
-        data: { userId },
-      });
-    }
-
-    const existing = await this.prisma.cartItem.findFirst({
-      where: { cartId: cart.id, productId },
-    });
-
-    if (existing) {
-      return this.prisma.cartItem.update({
-        where: { id: existing.id },
-        data: { qty: existing.qty + quantity },
-      });
-    }
-
-    // product price
-    const product = await this.prisma.product.findUnique({
-      where: { id: productId },
-    });
-
-    return this.prisma.cartItem.create({
-      data: {
-        cartId: cart.id,
-        productId,
-        qty: quantity,
-        price: product.price,
-      },
+  if (!cart) {
+    cart = await this.prisma.cart.create({
+      data: { userId },
     });
   }
+
+  // 2. Validate product
+  const product = await this.prisma.product.findUnique({
+    where: { id: productId },
+  });
+
+  if (!product) throw new NotFoundException("Product not found");
+
+  // 3. Check existing cart item
+  const existing = await this.prisma.cartItem.findFirst({
+    where: { cartId: cart.id, productId },
+  });
+
+  if (existing) {
+    return this.prisma.cartItem.update({
+      where: { id: existing.id },
+      data: { qty: existing.qty + quantity },
+    });
+  }
+
+  // 4. Create new cart item
+  return this.prisma.cartItem.create({
+    data: {
+      cartId: cart.id,
+      productId,
+      qty: quantity,
+      price: product.price,
+    },
+  });
+}
+
 
   // 7. REMOVE FROM CART
   async removeFromCart(userId: number, itemId: number) {
@@ -132,7 +142,7 @@ export class BuyerService {
   }
 
   // 8. CREATE ORDER FROM CART
-  async createOrder(userId: number) {
+  async createOrder(userId: number, shippingAddress?: string) {
     const cart = await this.prisma.cart.findUnique({
       where: { userId },
       include: { items: { include: { product: true } } },
@@ -144,6 +154,7 @@ export class BuyerService {
     const order = await this.prisma.order.create({
       data: {
         buyerId: userId,
+        shippingAddress,
         totalAmount: cart.items.reduce(
           (sum, item) => sum + item.price * item.qty,
           0,

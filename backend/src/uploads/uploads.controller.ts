@@ -1,14 +1,15 @@
 import { Controller, Post, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
 import { ApiTags, ApiOperation, ApiConsumes, ApiBody } from '@nestjs/swagger';
+import { ImageProcessingService } from './image-processing.service';
 
 @ApiTags('Uploads')
 @Controller('uploads')
 export class UploadsController {
+  constructor(private readonly imageProcessingService: ImageProcessingService) {}
+
   @Post('image')
-  @ApiOperation({ summary: 'Upload product image' })
+  @ApiOperation({ summary: 'Upload product image to Cloudinary' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -24,20 +25,6 @@ export class UploadsController {
   })
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req, file, callback) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          const ext = extname(file.originalname);
-          callback(null, `product-${uniqueSuffix}${ext}`);
-        },
-      }),
-      fileFilter: (req, file, callback) => {
-        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
-          return callback(new BadRequestException('Only image files are allowed!'), false);
-        }
-        callback(null, true);
-      },
       limits: {
         fileSize: 5 * 1024 * 1024, // 5MB
       },
@@ -48,12 +35,20 @@ export class UploadsController {
       throw new BadRequestException('No file uploaded');
     }
 
-    return {
-      message: 'Image uploaded successfully',
-      filename: file.filename,
-      path: `/uploads/${file.filename}`,
-      size: file.size,
-      mimetype: file.mimetype
-    };
+    if (!file.mimetype.startsWith('image/')) {
+      throw new BadRequestException('Only image files are allowed!');
+    }
+
+    try {
+      const imageUrl = await this.imageProcessingService.processImage(file);
+      return {
+        message: 'Image uploaded successfully',
+        url: imageUrl,
+        size: file.size,
+        mimetype: file.mimetype
+      };
+    } catch (error) {
+      throw new BadRequestException('Failed to upload image');
+    }
   }
 }

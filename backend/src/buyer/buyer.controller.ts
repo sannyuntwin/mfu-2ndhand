@@ -42,38 +42,38 @@ export class BuyerController {
   }
 
   // ================================
-  // 4. POST /buyer/orders/:id/cancel
+  // 4. PUT /buyer/orders/:id/cancel
   // ================================
-  @Post('orders/:id/cancel')
-  cancelMyOrder(@Req() req: any, @Param('id') orderId: number) {
+  @Put('orders/:id/cancel')
+  cancelOrder(@Req() req: any, @Param('id') orderId: number) {
     return this.buyerService.cancelMyOrder(Number(orderId), req.user.id);
   }
 
   // ================================
-  // 5. GET /buyer/carts
+  // 5. GET /buyer/cart
   // ================================
   @Get('carts')
-  getMyCarts(@Req() req: any) {
+  getCart(@Req() req: any) {
     return this.buyerService.getMyCarts(req.user.id);
   }
 
   // ================================
-  // 6. POST /buyer/carts
-  // Body: { productId, qty }
+  // 6. POST /buyer/cart
+  // Body: { productId, quantity }
   // ================================
   @Post('carts')
   addToCart(@Req() req: any, @Body() body: any) {
     return this.buyerService.addToCart(
       req.user.id,
       body.productId,
-      body.qty || 1,
+      body.quantity || 1,
     );
   }
 
   // ================================
-  // 7. DELETE /buyer/carts/:itemId
+  // 7. DELETE /buyer/cart/:itemId
   // ================================
-  @Delete('carts/:itemId')
+  @Delete('cart/:itemId')
   removeFromCart(@Req() req: any, @Param('itemId') itemId: number) {
     return this.buyerService.removeFromCart(req.user.id, Number(itemId));
   }
@@ -82,7 +82,7 @@ export class BuyerController {
   // 8. POST /buyer/orders  (Create order)
   // ================================
   @Post('orders')
-  createOrder(@Req() req: any) {
-    return this.buyerService.createOrder(req.user.id);
+  createOrder(@Req() req: any, @Body() body: any) {
+    return this.buyerService.createOrder(req.user.id, body.shippingAddress);
   }
 }
