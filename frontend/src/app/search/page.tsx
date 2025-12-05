@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ProductCard } from '../../components/common/product-card';
@@ -42,7 +42,7 @@ interface SearchResponse {
   totalPages: number;
 }
 
-export default function SearchPage() {
+function SearchContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
@@ -414,4 +414,12 @@ export default function SearchPage() {
       </div>
     </div>
   );
+}
+
+export default function SearchPage() {
+ return (
+   <Suspense fallback={<div>Loading...</div>}>
+     <SearchContent />
+   </Suspense>
+ );
 }
