@@ -28,8 +28,11 @@ let ProductsService = class ProductsService {
     }
     // ANYONE
     async getProductById(id) {
+        if (!id || isNaN(id)) {
+            throw new common_1.NotFoundException('Invalid product ID');
+        }
         const product = await this.prisma.product.findUnique({
-            where: { id },
+            where: { id: id },
             include: {
                 seller: { select: { id: true, name: true } },
                 category: true,

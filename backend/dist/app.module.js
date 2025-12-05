@@ -13,6 +13,7 @@ const auth_module_1 = require("./auth/auth.module");
 const buyer_module_1 = require("./buyer/buyer.module");
 const products_module_1 = require("./products/products.module");
 const seller_module_1 = require("./seller/seller.module");
+const categories_module_1 = require("./categories/categories.module");
 const prisma_module_1 = require("./prisma/prisma.module");
 let AppModule = class AppModule {
 };
@@ -28,6 +29,7 @@ exports.AppModule = AppModule = __decorate([
             buyer_module_1.BuyerModule,
             products_module_1.ProductsModule,
             seller_module_1.SellerModule,
+            categories_module_1.CategoriesModule,
         ],
     })
 ], AppModule);

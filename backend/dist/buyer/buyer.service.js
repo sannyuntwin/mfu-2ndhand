@@ -96,7 +96,7 @@ let BuyerService = class BuyerService {
         if (existing) {
             return this.prisma.cartItem.update({
                 where: { id: existing.id },
-                data: { quantity: existing.quantity + quantity },
+                data: { qty: existing.qty + quantity },
             });
         }
         // product price
@@ -107,7 +107,7 @@ let BuyerService = class BuyerService {
             data: {
                 cartId: cart.id,
                 productId,
-                quantity,
+                qty: quantity,
                 price: product.price,
             },
         });
@@ -135,11 +135,11 @@ let BuyerService = class BuyerService {
         const order = await this.prisma.order.create({
             data: {
                 buyerId: userId,
-                totalAmount: cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+                totalAmount: cart.items.reduce((sum, item) => sum + item.price * item.qty, 0),
                 items: {
                     create: cart.items.map((i) => ({
                         productId: i.productId,
-                        quantity: i.quantity,
+                        quantity: i.qty,
                         price: i.price,
                     })),
                 },
