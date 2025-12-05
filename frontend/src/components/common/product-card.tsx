@@ -38,7 +38,7 @@ export function ProductCard({ product, onAddToCart, showSeller = true }: Product
             {product.description}
           </p>
 
-          {showSeller && (
+          {showSeller && product.seller && (
             <p className="text-sm text-gray-500">
               Seller: {product.seller.name}
             </p>

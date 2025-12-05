@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Product, ProductsResponse } from '../../types';
 import { ProductCard } from '../../components/common/product-card';
+import { productService } from "@/services/product.service";
 
 function ProductsContent() {
   const searchParams = useSearchParams();
@@ -34,7 +35,7 @@ function ProductsContent() {
         limit: '12'
       });
 
-      const response = await fetch(`http://localhost:5000/api/products?${queryParams}`);
+      const response = await fetch(`http://localhost:5000/api/v1/products?${queryParams}`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

@@ -7,7 +7,13 @@ import { useAuth } from "@/context/auth.context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -15,14 +21,16 @@ export default function RegisterPage() {
     email: "",
     password: "",
     confirmPassword: "",
+    role: "BUYER",
   });
+
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const { register } = useAuth();
   const router = useRouter();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -49,8 +57,10 @@ export default function RegisterPage() {
         name: formData.name,
         email: formData.email,
         password: formData.password,
+        role: formData.role,
       });
-      router.push("/");
+
+      router.push("/"); // or redirect to login
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed");
     } finally {
@@ -62,7 +72,9 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <h2 className="text-3xl font-extrabold text-gray-900">Create your account</h2>
+          <h2 className="text-3xl font-extrabold text-gray-900">
+            Create your account
+          </h2>
           <p className="mt-2 text-sm text-gray-600">
             Join SecondHand Marketplace today
           </p>
@@ -72,9 +84,10 @@ export default function RegisterPage() {
           <CardHeader>
             <CardTitle>Register</CardTitle>
             <CardDescription>
-              Create a new account to start buying and selling
+              Create a new buyer account to start shopping
             </CardDescription>
           </CardHeader>
+
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
@@ -130,16 +143,10 @@ export default function RegisterPage() {
               </div>
 
               {error && (
-                <div className="text-red-600 text-sm text-center">
-                  {error}
-                </div>
+                <div className="text-red-600 text-sm text-center">{error}</div>
               )}
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={loading}
-              >
+              <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? "Creating account..." : "Create Account"}
               </Button>
             </form>
@@ -147,7 +154,10 @@ export default function RegisterPage() {
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
                 Already have an account?{" "}
-                <Link href="/auth/login" className="font-medium text-orange-600 hover:text-orange-500">
+                <Link
+                  href="/auth/login"
+                  className="font-medium text-orange-600 hover:text-orange-500"
+                >
                   Sign in
                 </Link>
               </p>

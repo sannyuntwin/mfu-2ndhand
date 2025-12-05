@@ -20,8 +20,12 @@ export class ProductsService {
 
   // ANYONE
   async getProductById(id: number) {
+    if (!id || isNaN(id)) {
+      throw new NotFoundException('Invalid product ID');
+    }
+
     const product = await this.prisma.product.findUnique({
-      where: { id },
+      where: { id: id },
       include: {
         seller: { select: { id: true, name: true } },
         category: true,

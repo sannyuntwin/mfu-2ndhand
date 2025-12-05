@@ -3,27 +3,24 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { apiClient } from "@/utils/api";
-import { AddToCartButton } from "../../../components/common/add-to-cart-button";
+import { productService } from "@/services/product.service";
+import { AddToCartButton } from "@/components/common/add-to-cart-button";
 
-// This would normally be a server component fetching data
 async function getProduct(id: string) {
   try {
-    const response = await apiClient.getProduct(Number(id));
-    return response;
+    const product = await productService.getById(Number(id));
+    return product;
   } catch (error) {
+    console.error("Error fetching product:", error);
     return null;
   }
 }
 
-// Mock related products - in real app, this would come from API
 async function getRelatedProducts(categoryId?: number) {
+  if (!categoryId) return [];
   try {
-    const params = {
-      limit: '4',
-      category: categoryId?.toString(),
-    };
-    const response = await apiClient.getProducts(params);
+    const params = { limit: '4', category: categoryId.toString() };
+    const response = await productService.getAll(params);
     return response.products || [];
   } catch (error) {
     console.error('Error fetching related products:', error);
@@ -39,12 +36,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const resolvedParams = await params;
   const product = await getProduct(resolvedParams.id);
 
-  if (!product) {
-    notFound();
-  }
+  if (!product) notFound();
 
   const relatedProducts = await getRelatedProducts(product.categoryId);
-
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -63,7 +57,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </div>
             {product.images && product.images.length > 1 && (
               <div className="grid grid-cols-4 gap-2">
-                {product.images.slice(1).map((image, index) => (
+                {product.images.slice(1).map((image: { url: string }, index: number) => (
                   <div key={index} className="aspect-square relative overflow-hidden rounded bg-gray-100 cursor-pointer">
                     <Image
                       src={image.url}
@@ -80,36 +74,31 @@ export default async function ProductPage({ params }: ProductPageProps) {
           {/* Product Info */}
           <div className="space-y-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                {product.title}
-              </h1>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">{product.title}</h1>
               <div className="flex items-center gap-2 mb-4">
-                <Badge variant="secondary">
-                  {product.category?.name || "Uncategorized"}
-                </Badge>
-                {product.seller && product.seller.role === "SELLER" && (
+                <Badge variant="secondary">{product.category?.name || "Uncategorized"}</Badge>
+                {product.seller?.role === "SELLER" && (
                   <Badge variant="outline">Verified Seller</Badge>
                 )}
               </div>
             </div>
 
-            <div className="text-3xl font-bold text-orange-600">
-              ${product.price}
-            </div>
+            <div className="text-3xl font-bold text-orange-600">${product.price}</div>
 
             <AddToCartButton productId={product.id} />
             <Button variant="outline" className="w-full" size="lg" disabled>
               Add to Favorites (Client Component Required)
             </Button>
 
+            {/* Seller Info */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Seller Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <p className="font-medium">{product.seller.name}</p>
+                <p className="font-medium">{product.seller?.name}</p>
                 <p className="text-sm text-gray-600">
-                  Member since {product.seller.createdAt ? new Date(product.seller.createdAt).getFullYear() : 'N/A'}
+                  Member since {product.seller?.createdAt ? new Date(product.seller.createdAt).getFullYear() : 'N/A'}
                 </p>
                 <Button variant="link" className="p-0 h-auto text-orange-600">
                   View Seller Profile
@@ -117,6 +106,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               </CardContent>
             </Card>
 
+            {/* Product Meta */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Product Details</CardTitle>
@@ -129,9 +119,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   </div>
                   <div>
                     <span className="font-medium">Listed:</span>
-                    <p className="text-gray-600">
-                      {new Date(product.createdAt).toLocaleDateString()}
-                    </p>
+                    <p className="text-gray-600">{new Date(product.createdAt).toLocaleDateString()}</p>
                   </div>
                 </div>
               </CardContent>
@@ -147,13 +135,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 <CardTitle>Description</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-700 whitespace-pre-line">
-                  {product.description}
-                </p>
+                <p className="text-gray-700 whitespace-pre-line">{product.description}</p>
               </CardContent>
             </Card>
 
-            {/* Reviews Section */}
+            {/* Reviews */}
             <Card className="mt-6">
               <CardHeader>
                 <CardTitle>Reviews & Ratings</CardTitle>
@@ -166,14 +152,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </Card>
           </div>
 
-          {/* Related Products Sidebar */}
+          {/* Related Products */}
           <div>
             <h3 className="text-xl font-semibold mb-4">Related Products</h3>
             <div className="space-y-4">
               {relatedProducts
-                .filter(p => p.id !== product.id)
+                .filter((p: any) => p.id !== product.id)
                 .slice(0, 3)
-                .map(relatedProduct => (
+                .map((relatedProduct: any) => (
                   <div key={relatedProduct.id} className="bg-white rounded-lg p-4 shadow">
                     <div className="aspect-square relative mb-2">
                       <Image
@@ -183,15 +169,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
                         className="object-cover rounded"
                       />
                     </div>
-                    <h4 className="font-medium text-sm line-clamp-2 mb-1">
-                      {relatedProduct.title}
-                    </h4>
-                    <p className="text-orange-600 font-bold">
-                      ${relatedProduct.price}
-                    </p>
+                    <h4 className="font-medium text-sm line-clamp-2 mb-1">{relatedProduct.title}</h4>
+                    <p className="text-orange-600 font-bold">${relatedProduct.price}</p>
                   </div>
-                ))
-              }
+                ))}
             </div>
           </div>
         </div>

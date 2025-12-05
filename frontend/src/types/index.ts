@@ -92,7 +92,7 @@ export interface OrderItem {
 export interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (userData: { name: string; email: string; password: string }) => Promise<void>;
+  register: (userData: { name: string; email: string; password: string; role: string }) => Promise<void>;
   logout: () => void;
   loading: boolean;
 }
