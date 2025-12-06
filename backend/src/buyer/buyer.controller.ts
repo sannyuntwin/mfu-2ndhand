@@ -62,4 +62,17 @@ export class BuyerController {
       body.shippingAddress,
     );
   }
+
+  // ================================
+  // 6. POST /buyer/orders/from-cart (Create order from cart)
+  // Body: { cartId, shippingAddress? }
+  // ================================
+  @Post('orders/from-cart')
+  createOrderFromCart(@Req() req: any, @Body() body: any) {
+    return this.buyerService.createOrderFromCart(
+      req.user.id,
+      body.cartId,
+      body.shippingAddress,
+    );
+  }
 }

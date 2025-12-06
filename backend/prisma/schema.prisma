@@ -39,9 +39,10 @@ model User {
   password  String
   role      Role      @default(BUYER)
   createdAt DateTime  @default(now())
-  updatedAt DateTime  @default(now()) @updatedAt
+  updatedAt DateTime  @updatedAt
   products  Product[] @relation("ProductSeller")
   orders    Order[]   @relation("OrderBuyer")
+  cart      Cart?
 }
 
 model Product {
@@ -52,10 +53,12 @@ model Product {
   imageUrl    String?
   sellerId    Int
   isActive    Boolean   @default(true)
+  stock       Int       @default(0)
   createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @default(now()) @updatedAt
+  updatedAt   DateTime  @updatedAt
   seller      User      @relation("ProductSeller", fields: [sellerId], references: [id])
   orderItems  OrderItem[]
+  cartItems   CartItem[]
 }
 
 model Order {
@@ -65,7 +68,7 @@ model Order {
   totalAmount    Float
   shippingAddress String?
   createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @default(now()) @updatedAt
+  updatedAt      DateTime    @updatedAt
   buyer          User        @relation("OrderBuyer", fields: [buyerId], references: [id])
   items          OrderItem[]
   payment        Payment?
@@ -86,8 +89,30 @@ model Payment {
   orderId              Int           @unique
   amount               Float
   status               PaymentStatus @default(PENDING)
-  stripePaymentIntentId String?
+  stripePaymentIntentId String?      @unique
   stripeClientSecret   String?
   createdAt            DateTime      @default(now())
   order                Order         @relation(fields: [orderId], references: [id])
+}
+
+model Cart {
+  id        Int         @id @default(autoincrement())
+  userId    Int         @unique
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  user      User        @relation(fields: [userId], references: [id])
+  items     CartItem[]
+}
+
+model CartItem {
+  id        Int      @id @default(autoincrement())
+  cartId    Int
+  productId Int
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id])
+
+  @@unique([cartId, productId])
 }

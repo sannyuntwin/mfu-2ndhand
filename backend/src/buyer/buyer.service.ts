@@ -4,10 +4,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { PaymentsService } from '../payments/payments.service';
 
 @Injectable()
 export class BuyerService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private paymentsService: PaymentsService,
+  ) {}
 
   // 1. GET MY PROFILE
   getMe(userId: number) {
@@ -63,7 +67,7 @@ export class BuyerService {
     });
   }
 
-  // 5. CREATE ORDER
+  // 5. CREATE ORDER (single product)
   async createOrder(userId: number, productId: number, quantity: number, shippingAddress?: string) {
     // Validate product
     const product = await this.prisma.product.findUnique({
@@ -89,5 +93,10 @@ export class BuyerService {
     });
 
     return order;
+  }
+
+  // 6. CREATE ORDER FROM CART
+  async createOrderFromCart(userId: number, cartId: number, shippingAddress?: string) {
+    return this.paymentsService.createOrderFromCart(userId, cartId, shippingAddress);
   }
 }
