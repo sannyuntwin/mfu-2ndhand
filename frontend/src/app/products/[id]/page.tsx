@@ -1,9 +1,13 @@
+// Server Component
+
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { productService } from "@/services/products.service";
+import { useCart } from "@/context/cart.context";
+import { useState } from "react";
 
 async function getProduct(id: string) {
   try {
@@ -38,6 +42,37 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const relatedProducts = await getRelatedProducts();
 
   return (
+    <ProductPageClient 
+      product={product} 
+      relatedProducts={relatedProducts} 
+    />
+  );
+}
+
+function ProductPageClient({ product, relatedProducts }: { product: any, relatedProducts: any[] }) {
+  const { addToCart } = useCart();
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+
+  const handleAddToCart = async () => {
+    try {
+      setIsAddingToCart(true);
+      await addToCart(product.id, quantity);
+      alert(`Added ${quantity} ${product.title} to cart!`);
+    } catch (error) {
+      console.error('Failed to add to cart:', error);
+      alert('Failed to add item to cart. Please try again.');
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
+
+  const handleBuyNow = () => {
+    // Direct checkout with selected quantity
+    window.location.href = `/checkout?productId=${product.id}&quantity=${quantity}`;
+  };
+
+  return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Product Details */}
@@ -68,9 +103,52 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
             <div className="text-3xl font-bold text-orange-600">${product.price}</div>
 
-            <Button className="w-full" size="lg" asChild>
-              <a href={`/checkout?productId=${product.id}`}>Buy Now</a>
-            </Button>
+            {/* Quantity Selector */}
+            <div className="flex items-center gap-4">
+              <label className="font-medium">Quantity:</label>
+              <div className="flex items-center border border-gray-300 rounded-md">
+                <button
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="px-3 py-2 hover:bg-gray-100"
+                >
+                  -
+                </button>
+                <span className="px-4 py-2 border-x">{quantity}</span>
+                <button
+                  onClick={() => setQuantity(Math.min(product.stock || 999, quantity + 1))}
+                  className="px-3 py-2 hover:bg-gray-100"
+                >
+                  +
+                </button>
+              </div>
+              <span className="text-sm text-gray-600">
+                {product.stock || '∞'} available
+              </span>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-4">
+              <Button 
+                onClick={handleAddToCart}
+                disabled={isAddingToCart || (product.stock === 0)}
+                variant="outline"
+                className="flex-1"
+              >
+                {isAddingToCart ? 'Adding...' : 'Add to Cart'}
+              </Button>
+              <Button 
+                onClick={handleBuyNow}
+                disabled={product.stock === 0}
+                className="flex-1 bg-orange-500 hover:bg-orange-600"
+              >
+                Buy Now
+              </Button>
+            </div>
+
+            {/* Stock Status */}
+            {product.stock === 0 && (
+              <div className="text-red-600 font-medium">Out of Stock</div>
+            )}
 
             {/* Seller Info */}
             <Card>

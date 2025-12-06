@@ -12,10 +12,15 @@ export const dynamic = 'force-dynamic';
 
 export default function CartPage() {
   const router = useRouter();
-  const { cart, removeFromCart, clearCart, getTotal } = useCart();
+  const { cart, updateQuantity, removeFromCart, clearCart, getTotal, loading, error } = useCart();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
-  if (!cart) {
+  const handleCheckout = () => {
+    setIsCheckingOut(true);
+    router.push('/checkout');
+  };
+
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -26,14 +31,21 @@ export default function CartPage() {
     );
   }
 
-  const safeCart = Array.isArray(cart) ? cart : [];
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="text-red-600 mb-4">
+            <h2 className="text-2xl font-bold mb-2">Error Loading Cart</h2>
+            <p>{error}</p>
+          </div>
+          <Button onClick={() => window.location.reload()}>Try Again</Button>
+        </div>
+      </div>
+    );
+  }
 
-  const handleCheckout = () => {
-    setIsCheckingOut(true);
-    router.push('/checkout');
-  };
-
-  if (cart.length === 0) {
+  if (!cart || cart.items.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -59,7 +71,7 @@ export default function CartPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
-          <p className="text-gray-600 mt-2">{safeCart.length} item(s) in your cart</p>
+          <p className="text-gray-600 mt-2">{cart.items.length} item(s) in your cart</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -68,45 +80,50 @@ export default function CartPage() {
             <Card>
               <CardContent className="p-6">
                 <div className="space-y-6">
-                  {safeCart.map((item) => (
+                  {cart.items.map((item) => (
                     <div key={item.id} className="flex items-center space-x-4 py-4 border-b border-gray-200 last:border-b-0">
                       
                       {/* IMAGE */}
                       <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
-                        {item.product.images?.[0]?.url ? (
-                          <Image
-                            src={item.product.images[0].url}
-                            alt={item.product.title}
-                            width={80}
-                            height={80}
-                            className="object-cover"
-                          />
-                        ) : (
-                          <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                        )}
+                        <Image
+                          src={item.product.imageUrl || "/placeholder.jpg"}
+                          alt={item.product.title}
+                          width={80}
+                          height={80}
+                          className="object-cover"
+                        />
                       </div>
 
                       {/* DETAILS */}
                       <div className="flex-1">
                         <h3 className="font-medium text-gray-900">
-                          <Link href={`/products/${item.productId}`} className="hover:text-orange-600">
+                          <Link href={`/products/${item.product.id}`} className="hover:text-orange-600">
                             {item.product.title}
                           </Link>
                         </h3>
                         <p className="text-gray-600 text-sm mt-1">${item.product.price.toFixed(2)}</p>
+                        {item.product.stock === 0 && (
+                          <p className="text-red-600 text-sm">Out of Stock</p>
+                        )}
                       </div>
 
-                      {/* QUANTITY — DISABLED */}
-                      <div className="flex items-center space-x-2 opacity-40 cursor-not-allowed">
-                        <div className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-md">
+                      {/* QUANTITY */}
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                          className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-md hover:bg-gray-100"
+                          disabled={item.product.stock === 0}
+                        >
                           -
-                        </div>
+                        </button>
                         <span className="w-8 text-center">{item.quantity}</span>
-                        <div className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-md">
+                        <button
+                          onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                          className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-md hover:bg-gray-100"
+                          disabled={item.quantity >= item.product.stock}
+                        >
                           +
-                        </div>
+                        </button>
                       </div>
 
                       {/* TOTAL */}
@@ -118,7 +135,7 @@ export default function CartPage() {
 
                       {/* REMOVE */}
                       <button
-                        onClick={() => removeFromCart(item.productId)}
+                        onClick={() => removeFromCart(item.product.id)}
                         className="text-red-600 hover:text-red-800 ml-4"
                       >
                         ✕
@@ -128,7 +145,9 @@ export default function CartPage() {
                 </div>
 
                 <div className="flex justify-between items-center pt-6 border-t border-gray-200">
-                  <Button variant="outline" onClick={clearCart} className="text-red-600 hover:text-red-700">Clear Cart</Button>
+                  <Button variant="outline" onClick={clearCart} className="text-red-600 hover:text-red-700">
+                    Clear Cart
+                  </Button>
                   <Link href="/products">
                     <Button variant="outline">Continue Shopping</Button>
                   </Link>
@@ -162,11 +181,18 @@ export default function CartPage() {
 
                 <Button
                   onClick={handleCheckout}
-                  disabled={isCheckingOut}
+                  disabled={isCheckingOut || cart.items.some(item => item.product.stock === 0)}
                   className="w-full bg-orange-500 hover:bg-orange-600"
                 >
                   {isCheckingOut ? 'Processing...' : 'Proceed to Checkout'}
                 </Button>
+
+                {/* Stock Warning */}
+                {cart.items.some(item => item.product.stock === 0) && (
+                  <div className="text-red-600 text-sm text-center">
+                    Some items are out of stock and cannot be ordered
+                  </div>
+                )}
 
               </CardContent>
             </Card>

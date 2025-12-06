@@ -9,4 +9,6 @@ export const buyerService = {
 
   // ORDER CHECKOUT
   createOrder: (data: any) => api.post("/buyer/orders", data),
+  createOrderFromCart: (data: { cartId: number; shippingAddress?: string }) => 
+    api.post("/buyer/orders/from-cart", data),
 };
