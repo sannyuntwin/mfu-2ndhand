@@ -1,0 +1,20 @@
+
+
+
+========= Complete Re design =========
+/
+/login
+/register
+/products
+/products/[id]
+/profile
+/header (hamberger menu)
+
+Primary: Charcoal (#111827)
+
+Secondary: Cool Gray (#6B7280)
+
+Accent: Electric Blue (#3B82F6)
+
+Neutral: Pure White (#FFFFFF), Off-White (#F9FAFB)
+
