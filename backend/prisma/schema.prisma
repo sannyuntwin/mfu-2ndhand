@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+// prisma/schema.prisma
+datasource db {
+  provider  = "postgresql"
+  url  	    = env("DATABASE_URL")
+  // uncomment next line if you use Prisma <5.10
+  // directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+enum Role {
+  BUYER
+  SELLER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  name      String
+  email     String    @unique
+  password  String
+  role      Role      @default(BUYER)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+  products  Product[] @relation("ProductSeller")
+  orders    Order[]   @relation("OrderBuyer")
+}
+
+model Product {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String
+  price       Float
+  imageUrl    String?
+  sellerId    Int
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now()) @updatedAt
+  seller      User      @relation("ProductSeller", fields: [sellerId], references: [id])
+  orderItems  OrderItem[]
+}
+
+model Order {
+  id             Int         @id @default(autoincrement())
+  buyerId        Int
+  status         OrderStatus @default(PENDING)
+  totalAmount    Float
+  shippingAddress String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @default(now()) @updatedAt
+  buyer          User        @relation("OrderBuyer", fields: [buyerId], references: [id])
+  items          OrderItem[]
+  payment        Payment?
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  productId Int
+  quantity  Int
+  price     Float
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model Payment {
+  id                   Int           @id @default(autoincrement())
+  orderId              Int           @unique
+  amount               Float
+  status               PaymentStatus @default(PENDING)
+  stripePaymentIntentId String?
+  stripeClientSecret   String?
+  createdAt            DateTime      @default(now())
+  order                Order         @relation(fields: [orderId], references: [id])
+}
