@@ -127,7 +127,7 @@ export class SellerService {
       throw new ForbiddenException('Not your order');
 
     // Validate status is a valid OrderStatus enum value
-    const validStatuses: string[] = ['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'COMPLETED', 'CANCELLED'];
+    const validStatuses: string[] = ['PENDING', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
     if (!validStatuses.includes(status as OrderStatus)) {
       throw new ForbiddenException('Invalid order status');
     }

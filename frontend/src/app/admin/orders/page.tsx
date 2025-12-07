@@ -250,7 +250,7 @@ export default function AdminOrdersPage() {
                 </div>
                 <div className="text-right">
                   <div className="text-2xl font-bold text-gray-900 mb-2">
-                    ${order.total.toFixed(2)}
+                    ฿{order.total.toFixed(2)}
                   </div>
                   <div className="flex gap-2">
                     <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(order.status)}`}>
@@ -283,7 +283,7 @@ export default function AdminOrdersPage() {
                       <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
                     </div>
                     <div className="font-semibold">
-                      ${(item.price * item.quantity).toFixed(2)}
+                      ฿{(item.price * item.quantity).toFixed(2)}
                     </div>
                   </div>
                 ))}

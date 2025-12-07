@@ -153,7 +153,7 @@ export default function AdminProductsPage() {
                       <div className="text-lg font-medium text-gray-900">{product.title}</div>
                       <div className="text-sm text-gray-600 line-clamp-2">{product.description}</div>
                       <div className="text-sm text-gray-500">
-                        Seller: {product.seller.name} | Price: ${product.price}
+                        Seller: {product.seller.name} | Price: ฿{product.price}
                       </div>
                     </div>
                   </div>

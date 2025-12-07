@@ -65,7 +65,7 @@ export default async function OrderPage({ params }: OrderPageProps) {
                   </div>
                   <div>
                     <span className="font-medium">Total Amount:</span>
-                    <p className="text-gray-600">${order.totalAmount.toFixed(2)}</p>
+                    <p className="text-gray-600">฿{order.totalAmount.toFixed(2)}</p>
                   </div>
                 </div>
                 
@@ -97,11 +97,11 @@ export default async function OrderPage({ params }: OrderPageProps) {
                       <div className="flex-1">
                         <h3 className="font-medium text-gray-900">{item.product.title}</h3>
                         <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
-                        <p className="text-sm text-gray-600">Price: ${item.price}</p>
+                        <p className="text-sm text-gray-600">Price: ฿{item.price}</p>
                       </div>
                       <div className="text-right">
                         <p className="font-medium text-gray-900">
-                          ${(item.price * item.quantity).toFixed(2)}
+                          ฿{(item.price * item.quantity).toFixed(2)}
                         </p>
                       </div>
                     </div>
@@ -128,7 +128,7 @@ export default async function OrderPage({ params }: OrderPageProps) {
                     </div>
                     <div>
                       <span className="font-medium">Amount:</span>
-                      <p className="text-gray-600">${order.payment.amount.toFixed(2)}</p>
+                      <p className="text-gray-600">฿{order.payment.amount.toFixed(2)}</p>
                     </div>
                     {order.payment.status === 'PENDING' && (
                       <button className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded-md">

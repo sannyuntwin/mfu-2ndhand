@@ -1,7 +1,18 @@
-# Ignore environment files
+# Root env
 .env
-backend/.env
-!.env.example
-!backend/.env.example
-!frontend/.env.example
+.env.local
+.env.development
+.env.production
+
+# Frontend
 frontend/.env
+frontend/.env.local
+
+# Backend
+backend/.env
+backend/.env.local
+
+# Allow examples
+!.env.example
+!frontend/.env.example
+!backend/.env.example

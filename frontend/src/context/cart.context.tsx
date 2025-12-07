@@ -23,6 +23,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Create an empty cart object with required fields
+  const createEmptyCart = (): Cart => ({
+    id: 0,
+    userId: 0,
+    items: [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  });
+
   // Load cart on mount
   useEffect(() => {
     loadCart();
@@ -32,12 +41,29 @@ export function CartProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       setError(null);
+      
+      // Check if user is authenticated
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      if (!token) {
+        // No token, set empty cart and don't show error
+        setCart(createEmptyCart());
+        setLoading(false);
+        return;
+      }
+      
       const cartData = await cartService.getCart();
       setCart(cartData);
     } catch (err: any) {
       console.error('Failed to load cart:', err);
-      setError(err?.response?.data?.message || 'Failed to load cart');
-      setCart({ id: 0, userId: 0, items: [] }); // Empty cart as fallback
+      
+      // Handle authentication errors gracefully
+      if (err?.message?.includes('Unauthorized') || err?.message?.includes('401')) {
+        setCart(createEmptyCart()); // Empty cart for unauthenticated users
+        setError(null); // Don't show error for unauthenticated users
+      } else {
+        setError(err?.message || 'Failed to load cart');
+        setCart(createEmptyCart()); // Empty cart as fallback
+      }
     } finally {
       setLoading(false);
     }
@@ -50,7 +76,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       
       // Update cart state
       setCart(prevCart => {
-        if (!prevCart) return { id: 0, userId: 0, items: [newItem] };
+        if (!prevCart) return { ...createEmptyCart(), items: [newItem] };
         
         const existingItemIndex = prevCart.items.findIndex(item => item.product.id === productId);
         

@@ -118,7 +118,7 @@ export default function ProductsPage() {
                         <h3 className="text-lg font-medium text-gray-900">{product.title}</h3>
                         <p className="text-sm text-gray-600 line-clamp-2 mt-1">{product.description}</p>
                         <div className="mt-2">
-                          <span className="text-lg font-semibold text-gray-900">${product.price}</span>
+                          <span className="text-lg font-semibold text-gray-900">฿{product.price}</span>
                         </div>
                       </div>
                     </div>

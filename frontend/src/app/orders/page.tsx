@@ -106,7 +106,7 @@ export default function OrdersPage() {
                       <Badge className={getStatusColor(order.status)}>
                         {order.status.toUpperCase()}
                       </Badge>
-                      <p className="text-lg font-bold mt-2">${order.totalAmount.toFixed(2)}</p>
+                      <p className="text-lg font-bold mt-2">฿{order.totalAmount.toFixed(2)}</p>
                     </div>
                   </div>
 
@@ -125,7 +125,7 @@ export default function OrdersPage() {
                           <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
                         </div>
                         <p className="font-medium">
-                          ${(item.price * item.quantity).toFixed(2)}
+                          ฿{(item.price * item.quantity).toFixed(2)}
                         </p>
                       </div>
                     ))}

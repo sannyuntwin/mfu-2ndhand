@@ -77,11 +77,11 @@ export default function OrderHistory({ orders, loading }: OrderHistoryProps) {
                   <div className="flex-1">
                     <h4 className="font-medium">{item.product.title}</h4>
                     <p className="text-sm text-gray-600">
-                      Quantity: {item.quantity} × ${item.price}
+                      Quantity: {item.quantity} × ฿{item.price}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold">${(item.quantity * item.price).toFixed(2)}</p>
+                    <p className="font-semibold">฿{(item.quantity * item.price).toFixed(2)}</p>
                   </div>
                 </div>
               ))}
@@ -91,7 +91,7 @@ export default function OrderHistory({ orders, loading }: OrderHistoryProps) {
               <div className="flex justify-between items-center">
                 <span className="font-semibold">Total:</span>
                 <span className="text-lg font-bold">
-                  ${order.items.reduce((total, item) => total + (item.quantity * item.price), 0).toFixed(2)}
+                  ฿{order.items.reduce((total, item) => total + (item.quantity * item.price), 0).toFixed(2)}
                 </span>
               </div>
             </div>

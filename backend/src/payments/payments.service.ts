@@ -45,27 +45,22 @@ export class PaymentsService {
         },
       });
 
-      // Create or update payment record
-      let payment = order.payment;
-      if (!payment) {
-        payment = await this.prisma.payment.create({
-          data: {
-            orderId,
-            amount: order.totalAmount,
-            status: 'PENDING',
-            stripePaymentIntentId: paymentIntent.id,
-            stripeClientSecret: paymentIntent.client_secret,
-          },
-        });
-      } else {
-        await this.prisma.payment.update({
-          where: { id: payment.id },
-          data: {
-            stripePaymentIntentId: paymentIntent.id,
-            stripeClientSecret: paymentIntent.client_secret,
-          },
-        });
-      }
+      // Create or update payment record using upsert to avoid duplicate constraint violations
+      const payment = await this.prisma.payment.upsert({
+        where: { orderId },
+        update: {
+          stripePaymentIntentId: paymentIntent.id,
+          stripeClientSecret: paymentIntent.client_secret,
+          amount: order.totalAmount,
+        },
+        create: {
+          orderId,
+          amount: order.totalAmount,
+          status: 'PENDING',
+          stripePaymentIntentId: paymentIntent.id,
+          stripeClientSecret: paymentIntent.client_secret,
+        },
+      });
 
       return {
         clientSecret: paymentIntent.client_secret,

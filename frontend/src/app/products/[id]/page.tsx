@@ -1,76 +1,141 @@
-// Server Component
+"use client";
 
-import { notFound } from "next/navigation";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { productService } from "@/services/products.service";
 import { useCart } from "@/context/cart.context";
-import { useState } from "react";
 
-async function getProduct(id: string) {
-  try {
-    const product = await productService.getById(Number(id));
-    return product;
-  } catch (error) {
-    console.error("Error fetching product:", error);
-    return null;
-  }
-}
-
-async function getRelatedProducts() {
-  try {
-    const response = await productService.getAll();
-    return response?.slice(0, 4) || [];
-  } catch (error) {
-    console.error('Error fetching related products:', error);
-    return [];
-  }
+interface Product {
+  id: number;
+  title: string;
+  description: string;
+  price: number;
+  imageUrl?: string;
+  stock: number;
+  seller?: {
+    id: number;
+    name: string;
+    role?: string;
+    createdAt?: string;
+  };
+  createdAt: string;
 }
 
 interface ProductPageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{
+    id: string;
+  }>;
 }
 
-export default async function ProductPage({ params }: ProductPageProps) {
-  const resolvedParams = await params;
-  const product = await getProduct(resolvedParams.id);
-
-  if (!product) notFound();
-
-  const relatedProducts = await getRelatedProducts();
-
-  return (
-    <ProductPageClient 
-      product={product} 
-      relatedProducts={relatedProducts} 
-    />
-  );
-}
-
-function ProductPageClient({ product, relatedProducts }: { product: any, relatedProducts: any[] }) {
+export default function ProductPage({ params }: ProductPageProps) {
   const { addToCart } = useCart();
+  const [isLoading, setIsLoading] = useState(true);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
-  const [quantity, setQuantity] = useState(1);
+  const [resolvedParams, setResolvedParams] = useState<{ id: string } | null>(null);
+
+  // Unwrap params Promise
+  useEffect(() => {
+    params.then(setResolvedParams);
+  }, [params]);
+
+  // Fetch product data
+  useEffect(() => {
+    async function fetchProduct() {
+      if (!resolvedParams?.id) return;
+      
+      try {
+        setIsLoading(true);
+        
+        // Fetch main product
+        const productResponse = await fetch(`http://localhost:5000/api/v1/products/${resolvedParams.id}`);
+        if (!productResponse.ok) {
+          throw new Error('Product not found');
+        }
+        const productData = await productResponse.json();
+        setProduct(productData);
+
+        // Fetch related products
+        const relatedResponse = await fetch('http://localhost:5000/api/v1/products');
+        if (relatedResponse.ok) {
+          const relatedData = await relatedResponse.json();
+          setRelatedProducts(relatedData.slice(0, 4));
+        }
+      } catch (error) {
+        console.error('Error fetching product:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    if (resolvedParams?.id) {
+      fetchProduct();
+    }
+  }, [resolvedParams?.id]);
 
   const handleAddToCart = async () => {
+    if (!product) return;
+    
+    // Check if user is logged in
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    if (!token) {
+      alert('Please log in to add items to cart.');
+      window.location.href = '/login';
+      return;
+    }
+    
+    // Check stock availability
+    if (product.stock === 0) {
+      alert('This product is out of stock.');
+      return;
+    }
+    
     try {
       setIsAddingToCart(true);
-      await addToCart(product.id, quantity);
-      alert(`Added ${quantity} ${product.title} to cart!`);
+      await addToCart(product.id, 1); // Always add 1 item
+      alert(`Added ${product.title} to cart!`);
     } catch (error) {
       console.error('Failed to add to cart:', error);
-      alert('Failed to add item to cart. Please try again.');
+      const errorMessage = (error as any)?.response?.data?.message || (error as any)?.message || 'Failed to add item to cart. Please try again.';
+      alert(errorMessage);
     } finally {
       setIsAddingToCart(false);
     }
   };
 
   const handleBuyNow = () => {
-    // Direct checkout with selected quantity
-    window.location.href = `/checkout?productId=${product.id}&quantity=${quantity}`;
+    if (!product) return;
+    // Direct checkout with 1 item
+    window.location.href = `/checkout?productId=${product.id}&quantity=1`;
   };
+
+  if (isLoading || !resolvedParams) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-500"></div>
+          <p className="mt-4 text-gray-600">Loading product...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Product Not Found</h1>
+          <p className="text-gray-600 mb-8">The product you're looking for doesn't exist.</p>
+          <Button onClick={() => window.location.href = '/products'}>
+            Back to Products
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -85,6 +150,10 @@ function ProductPageClient({ product, relatedProducts }: { product: any, related
                 alt={product.title}
                 fill
                 className="object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = "/placeholder.jpg";
+                }}
               />
             </div>
           </div>
@@ -101,29 +170,15 @@ function ProductPageClient({ product, relatedProducts }: { product: any, related
               </div>
             </div>
 
-            <div className="text-3xl font-bold text-orange-600">${product.price}</div>
+            <div className="text-3xl font-bold text-orange-600">฿{product.price}</div>
 
-            {/* Quantity Selector */}
-            <div className="flex items-center gap-4">
-              <label className="font-medium">Quantity:</label>
-              <div className="flex items-center border border-gray-300 rounded-md">
-                <button
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="px-3 py-2 hover:bg-gray-100"
-                >
-                  -
-                </button>
-                <span className="px-4 py-2 border-x">{quantity}</span>
-                <button
-                  onClick={() => setQuantity(Math.min(product.stock || 999, quantity + 1))}
-                  className="px-3 py-2 hover:bg-gray-100"
-                >
-                  +
-                </button>
-              </div>
-              <span className="text-sm text-gray-600">
-                {product.stock || '∞'} available
-              </span>
+            {/* Stock Info */}
+            <div className="text-sm text-gray-600">
+              {product.stock === 0 ? (
+                <span className="text-red-600">Out of Stock</span>
+              ) : (
+                <span>{product.stock || '∞'} available</span>
+              )}
             </div>
 
             {/* Action Buttons */}
@@ -145,11 +200,6 @@ function ProductPageClient({ product, relatedProducts }: { product: any, related
               </Button>
             </div>
 
-            {/* Stock Status */}
-            {product.stock === 0 && (
-              <div className="text-red-600 font-medium">Out of Stock</div>
-            )}
-
             {/* Seller Info */}
             <Card>
               <CardHeader>
@@ -158,7 +208,7 @@ function ProductPageClient({ product, relatedProducts }: { product: any, related
               <CardContent className="space-y-2">
                 <p className="font-medium">{product.seller?.name}</p>
                 <p className="text-sm text-gray-600">
-                  Member since {product.seller?.createdAt ? new Date(product.seller.createdAt).getFullYear() : 'N/A'}
+                  Member since 2024
                 </p>
                 <Button variant="link" className="p-0 h-auto text-orange-600">
                   View Seller Profile
@@ -211,20 +261,28 @@ function ProductPageClient({ product, relatedProducts }: { product: any, related
             <h3 className="text-xl font-semibold mb-4">Related Products</h3>
             <div className="space-y-4">
               {relatedProducts
-                .filter((p: any) => p.id !== product.id)
+                .filter((p) => p.id !== product.id)
                 .slice(0, 3)
-                .map((relatedProduct: any) => (
-                  <div key={relatedProduct.id} className="bg-white rounded-lg p-4 shadow">
+                .map((relatedProduct) => (
+                  <div 
+                    key={relatedProduct.id} 
+                    className="bg-white rounded-lg p-4 shadow cursor-pointer hover:shadow-lg transition-shadow"
+                    onClick={() => window.location.href = `/products/${relatedProduct.id}`}
+                  >
                     <div className="aspect-square relative mb-2">
                       <Image
                         src={relatedProduct.imageUrl || "/placeholder-product.jpg"}
                         alt={relatedProduct.title}
                         fill
                         className="object-cover rounded"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = "/placeholder-product.jpg";
+                        }}
                       />
                     </div>
                     <h4 className="font-medium text-sm line-clamp-2 mb-1">{relatedProduct.title}</h4>
-                    <p className="text-orange-600 font-bold">${relatedProduct.price}</p>
+                    <p className="text-orange-600 font-bold">฿{relatedProduct.price}</p>
                   </div>
                 ))}
             </div>

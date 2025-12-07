@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { CartService } from './cart.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CreateCartItemDto } from './dto/create-cart-item.dto';
 
 @Controller('cart')
 @UseGuards(JwtAuthGuard)
@@ -27,12 +28,12 @@ export class CartController {
   @Post('items')
   addItem(
     @Req() req: any,
-    @Body() body: { productId: number; quantity: number },
+    @Body() createCartItemDto: CreateCartItemDto,
   ) {
     return this.cartService.addItemToCart(
       req.user.id,
-      body.productId,
-      body.quantity || 1,
+      createCartItemDto.productId,
+      createCartItemDto.quantity,
     );
   }
 

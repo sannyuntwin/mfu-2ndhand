@@ -2,12 +2,226 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// prisma/schema.prisma
 datasource db {
-  provider  = "postgresql"
-  url  	    = env("DATABASE_URL")
-  // uncomment next line if you use Prisma <5.10
-  // directUrl = env("DATABASE_URL_UNPOOLED")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                                       Int            @id @default(autoincrement())
+  email                                    String         @unique
+  password                                 String
+  name                                     String
+  createdAt                                DateTime       @default(now())
+  role                                     Role           @default(BUYER)
+  imageUrl                                 String?
+  isActive                                 Boolean        @default(true)
+  address                                  String?
+  phone                                    String?
+  updatedAt                                DateTime       @updatedAt
+  cart                                     Cart?
+  Conversation_Conversation_buyerIdToUser  Conversation[] @relation("Conversation_buyerIdToUser")
+  Conversation_Conversation_sellerIdToUser Conversation[] @relation("Conversation_sellerIdToUser")
+  Favorite                                 Favorite[]
+  Message                                  Message[]
+  Notification                             Notification[]
+  orders                                   Order[]        @relation("OrderBuyer")
+  products                                 Product[]      @relation("ProductSeller")
+  ProductView                              ProductView[]
+  Review                                   Review[]
+}
+
+model Product {
+  id             Int              @id @default(autoincrement())
+  title          String
+  description    String
+  price          Float
+  createdAt      DateTime         @default(now())
+  categoryId     Int?
+  imageUrl       String?
+  sellerId       Int
+  isActive       Boolean          @default(true)
+  isApproved     Boolean          @default(false)
+  brand          String?
+  condition      String?
+  tags           String?
+  updatedAt      DateTime         @updatedAt
+  views          Int              @default(0)
+  stock          Int              @default(0)
+  cartItems      CartItem[]
+  Conversation   Conversation[]
+  Favorite       Favorite[]
+  orderItems     OrderItem[]
+  Category       Category?        @relation(fields: [categoryId], references: [id])
+  seller         User             @relation("ProductSeller", fields: [sellerId], references: [id])
+  ProductImage   ProductImage[]
+  ProductVariant ProductVariant[]
+  ProductView    ProductView[]
+  Review         Review[]
+}
+
+model Order {
+  id                    Int           @id @default(autoincrement())
+  buyerId               Int
+  status                OrderStatus   @default(PENDING)
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  paymentStatus         PaymentStatus @default(PENDING)
+  stripePaymentIntentId String?
+  shippingAddress       String?
+  totalAmount           Float
+  buyer                 User          @relation("OrderBuyer", fields: [buyerId], references: [id])
+  items                 OrderItem[]
+  payment               Payment?
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  productId Int
+  quantity  Int
+  price     Float
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@unique([orderId, productId])
+}
+
+model Payment {
+  id                    Int           @id @default(autoincrement())
+  orderId               Int           @unique
+  amount                Float
+  currency              String        @default("usd")
+  status                PaymentStatus @default(PENDING)
+  stripePaymentIntentId String        @unique
+  stripeClientSecret    String
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  order                 Order         @relation(fields: [orderId], references: [id])
+}
+
+model Cart {
+  id        Int        @id @default(autoincrement())
+  userId    Int        @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  user      User       @relation(fields: [userId], references: [id])
+  items     CartItem[]
+}
+
+model CartItem {
+  id        Int      @id @default(autoincrement())
+  cartId    Int
+  productId Int
+  quantity  Int
+  price     Float
+  updatedAt DateTime @default(now()) @updatedAt
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id])
+
+  @@unique([cartId, productId])
+}
+
+model Category {
+  id             Int        @id @default(autoincrement())
+  name           String
+  description    String?
+  parentId       Int?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime
+  Category       Category?  @relation("CategoryToCategory", fields: [parentId], references: [id])
+  other_Category Category[] @relation("CategoryToCategory")
+  Product        Product[]
+}
+
+model Conversation {
+  id                               Int       @id @default(autoincrement())
+  buyerId                          Int
+  sellerId                         Int
+  productId                        Int
+  createdAt                        DateTime  @default(now())
+  updatedAt                        DateTime
+  User_Conversation_buyerIdToUser  User      @relation("Conversation_buyerIdToUser", fields: [buyerId], references: [id])
+  Product                          Product   @relation(fields: [productId], references: [id])
+  User_Conversation_sellerIdToUser User      @relation("Conversation_sellerIdToUser", fields: [sellerId], references: [id])
+  Message                          Message[]
+}
+
+model Favorite {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  productId Int
+  createdAt DateTime @default(now())
+  Product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+}
+
+model Message {
+  id             Int          @id @default(autoincrement())
+  conversationId Int
+  senderId       Int
+  content        String
+  isRead         Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  Conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  User           User         @relation(fields: [senderId], references: [id])
+}
+
+model Notification {
+  id        Int              @id @default(autoincrement())
+  userId    Int
+  title     String
+  message   String
+  type      NotificationType
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  User      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ProductImage {
+  id        Int      @id @default(autoincrement())
+  url       String
+  productId Int
+  createdAt DateTime @default(now())
+  Product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model ProductVariant {
+  id        Int     @id @default(autoincrement())
+  productId Int
+  name      String
+  value     String
+  price     Float?
+  stock     Int     @default(1)
+  Product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model ProductView {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  productId Int
+  viewedAt  DateTime @default(now())
+  Product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+}
+
+model Review {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  productId  Int
+  rating     Int
+  comment    String?
+  isApproved Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime
+  Product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  User       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
 }
 
 enum Role {
@@ -19,10 +233,8 @@ enum Role {
 enum OrderStatus {
   PENDING
   CONFIRMED
-  PROCESSING
   SHIPPED
   DELIVERED
-  COMPLETED
   CANCELLED
 }
 
@@ -32,87 +244,9 @@ enum PaymentStatus {
   FAILED
 }
 
-model User {
-  id        Int       @id @default(autoincrement())
-  name      String
-  email     String    @unique
-  password  String
-  role      Role      @default(BUYER)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  products  Product[] @relation("ProductSeller")
-  orders    Order[]   @relation("OrderBuyer")
-  cart      Cart?
-}
-
-model Product {
-  id          Int       @id @default(autoincrement())
-  title       String
-  description String
-  price       Float
-  imageUrl    String?
-  sellerId    Int
-  isActive    Boolean   @default(true)
-  stock       Int       @default(0)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  seller      User      @relation("ProductSeller", fields: [sellerId], references: [id])
-  orderItems  OrderItem[]
-  cartItems   CartItem[]
-}
-
-model Order {
-  id             Int         @id @default(autoincrement())
-  buyerId        Int
-  status         OrderStatus @default(PENDING)
-  totalAmount    Float
-  shippingAddress String?
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
-  buyer          User        @relation("OrderBuyer", fields: [buyerId], references: [id])
-  items          OrderItem[]
-  payment        Payment?
-}
-
-model OrderItem {
-  id        Int     @id @default(autoincrement())
-  orderId   Int
-  productId Int
-  quantity  Int
-  price     Float
-  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product   Product @relation(fields: [productId], references: [id])
-}
-
-model Payment {
-  id                   Int           @id @default(autoincrement())
-  orderId              Int           @unique
-  amount               Float
-  status               PaymentStatus @default(PENDING)
-  stripePaymentIntentId String?      @unique
-  stripeClientSecret   String?
-  createdAt            DateTime      @default(now())
-  order                Order         @relation(fields: [orderId], references: [id])
-}
-
-model Cart {
-  id        Int         @id @default(autoincrement())
-  userId    Int         @unique
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  user      User        @relation(fields: [userId], references: [id])
-  items     CartItem[]
-}
-
-model CartItem {
-  id        Int      @id @default(autoincrement())
-  cartId    Int
-  productId Int
-  quantity  Int      @default(1)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
-  product   Product  @relation(fields: [productId], references: [id])
-
-  @@unique([cartId, productId])
+enum NotificationType {
+  ORDER
+  REVIEW
+  SYSTEM
+  MESSAGE
 }

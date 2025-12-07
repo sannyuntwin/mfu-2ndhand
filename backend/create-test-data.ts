@@ -75,74 +75,74 @@ async function main() {
 
     console.log('👥 Created users');
 
-    // Create products for seller1 (compatible with current schema)
+    // Create products for seller1
     const product1 = await prisma.product.upsert({
       where: { id: 1 },
-      update: {},
+      update: { stock: 5 },
       create: {
         title: 'iPhone 15 Pro Max',
         description: 'The latest iPhone with advanced camera system, A17 Pro chip, and titanium design. Features include 48MP camera, Action Button, and USB-C connectivity.',
-        price: 1199.99,
+        price: 39990.00,
         imageUrl: '/placeholder.jpg',
         sellerId: seller1.id,
         isActive: true,
-        // stock field not included for compatibility
+        stock: 5,
       },
     });
 
     const product2 = await prisma.product.upsert({
       where: { id: 2 },
-      update: {},
+      update: { stock: 3 },
       create: {
         title: 'MacBook Air M3',
         description: 'Supercharged by the M3 chip, MacBook Air is up to 60% faster than the fastest Intel-based MacBook Air and up to 13x faster than the fastest 12-inch MacBook.',
-        price: 1099.99,
+        price: 36990.00,
         imageUrl: '/placeholder.jpg',
         sellerId: seller1.id,
         isActive: true,
-        // stock field not included for compatibility
+        stock: 3,
       },
     });
 
     const product3 = await prisma.product.upsert({
       where: { id: 3 },
-      update: {},
+      update: { stock: 10 },
       create: {
         title: 'Clean Code: A Handbook of Agile Software Craftsmanship',
         description: 'Even bad code can function. But if code isn\'t clean, it can bring a development organization to its knees. Every year, countless hours and significant resources are lost because of poorly written code.',
-        price: 39.99,
+        price: 1299.00,
         imageUrl: '/placeholder.jpg',
         sellerId: seller2.id,
         isActive: true,
-        // stock field not included for compatibility
+        stock: 10,
       },
     });
 
     const product4 = await prisma.product.upsert({
       where: { id: 4 },
-      update: {},
+      update: { stock: 8 },
       create: {
         title: 'Wireless Bluetooth Headphones',
         description: 'Premium noise-cancelling wireless headphones with 30-hour battery life, comfortable over-ear design, and crystal-clear audio quality.',
-        price: 199.99,
+        price: 6990.00,
         imageUrl: '/placeholder.jpg',
         sellerId: seller2.id,
         isActive: true,
-        // stock field not included for compatibility
+        stock: 8,
       },
     });
 
     const product5 = await prisma.product.upsert({
       where: { id: 5 },
-      update: {},
+      update: { stock: 15 },
       create: {
         title: 'Organic Cotton T-Shirt',
         description: 'Comfortable organic cotton t-shirt in multiple colors. Made from 100% GOTS certified organic cotton, pre-shrunk and tagless for maximum comfort.',
-        price: 29.99,
+        price: 999.00,
         imageUrl: '/placeholder.jpg',
         sellerId: seller2.id,
         isActive: true,
-        // stock field not included for compatibility
+        stock: 15,
       },
     });
 
@@ -168,11 +168,11 @@ async function main() {
     console.log('Admin: admin@example.com / admin123');
 
     console.log('\n📦 Products Available:');
-    console.log(`- ${product1.title} (ID: ${product1.id}) - $${product1.price}`);
-    console.log(`- ${product2.title} (ID: ${product2.id}) - $${product2.price}`);
-    console.log(`- ${product3.title} (ID: ${product3.id}) - $${product3.price}`);
-    console.log(`- ${product4.title} (ID: ${product4.id}) - $${product4.price}`);
-    console.log(`- ${product5.title} (ID: ${product5.id}) - $${product5.price}`);
+    console.log(`- ${product1.title} (ID: ${product1.id}) - ฿${product1.price} (Stock: ${product1.stock})`);
+    console.log(`- ${product2.title} (ID: ${product2.id}) - ฿${product2.price} (Stock: ${product2.stock})`);
+    console.log(`- ${product3.title} (ID: ${product3.id}) - ฿${product3.price} (Stock: ${product3.stock})`);
+    console.log(`- ${product4.title} (ID: ${product4.id}) - ฿${product4.price} (Stock: ${product4.stock})`);
+    console.log(`- ${product5.title} (ID: ${product5.id}) - ฿${product5.price} (Stock: ${product5.stock})`);
 
     console.log('\n🌐 Test URLs:');
     console.log('http://localhost:3000/products/1');

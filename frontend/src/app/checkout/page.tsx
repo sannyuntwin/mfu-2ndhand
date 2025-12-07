@@ -95,17 +95,17 @@ function CheckoutContent() {
                       <h4 className="font-medium text-sm">{item.product.title}</h4>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-sm text-gray-600">Qty: {item.quantity}</span>
-                        <span className="text-sm text-gray-600">× ${item.product.price}</span>
+                        <span className="text-sm text-gray-600">× ฿{item.product.price}</span>
                       </div>
                     </div>
-                    <p className="font-medium">${(item.product.price * item.quantity).toFixed(2)}</p>
+                    <p className="font-medium">฿{(item.product.price * item.quantity).toFixed(2)}</p>
                   </div>
                 ))}
 
                 <div className="border-t pt-4">
                   <div className="flex justify-between font-bold text-lg">
                     <span>Total</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>฿{total.toFixed(2)}</span>
                   </div>
                 </div>
               </CardContent>
@@ -151,16 +151,16 @@ function CheckoutContent() {
                   <h4 className="font-medium text-sm">{singleProduct.title}</h4>
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-sm text-gray-600">Qty: {quantity}</span>
-                    <span className="text-sm text-gray-600">× ${singleProduct.price}</span>
+                    <span className="text-sm text-gray-600">× ฿{singleProduct.price}</span>
                   </div>
                 </div>
-                <p className="font-medium">${total.toFixed(2)}</p>
+                <p className="font-medium">฿{total.toFixed(2)}</p>
               </div>
 
               <div className="border-t pt-4">
                 <div className="flex justify-between font-bold text-lg">
                   <span>Total</span>
-                  <span>${total.toFixed(2)}</span>
+                  <span>฿{total.toFixed(2)}</span>
                 </div>
               </div>
             </CardContent>
