@@ -34,13 +34,16 @@ async function bootstrap() {
   // Global prefix
   app.setGlobalPrefix('api/v1');
 
-  // CORS
+  // CORS - Updated for production deployment
   app.enableCors({
     origin: (origin, cb) => {
       const whitelist = [
         'http://localhost:3000',
         'http://localhost:5173',
         configService.get('CORS_ORIGIN'),
+        'https://mfu-2ndhand-seven.vercel.app',
+        'https://mfu-2ndhand.vercel.app',
+        'https://mfu-2ndhand.onrender.com',
       ];
       if (!origin || whitelist.includes(origin)) {
         cb(null, true);
