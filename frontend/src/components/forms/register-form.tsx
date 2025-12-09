@@ -49,6 +49,7 @@ export function RegisterForm({ onSubmit, loading }: RegisterFormProps) {
           className="w-full border p-2"
         />
       </div>
+
       <div>
         <label>Role</label>
         <select
@@ -61,6 +62,7 @@ export function RegisterForm({ onSubmit, loading }: RegisterFormProps) {
           <option value="ADMIN">Admin</option>
         </select>
       </div>
+
       <button type="submit" disabled={loading}>
         {loading ? 'Registering...' : 'Register'}
       </button>
